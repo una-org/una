@@ -88,6 +88,27 @@ describe('una', function() {
                 }
             });
         });
+
+        it('should only be able to join the room after the previous screen terminates', function(done) {
+            var room_data = {room: '123'};
+            socket.emit('register-screen', room_data);
+
+            socket.on('screen-ready', function(data) {
+                if (data.success) {
+                    socket.disconnect();
+                    // Since the screen has been disconnected, new screen should be able to
+                    // join the same id
+                    var s2 = new_socket();
+                    s2.emit('register-screen', room_data);
+                    s2.on('screen-ready', function(data) {
+                        if (data.success) {
+                            s2.disconnect();
+                            done();
+                        }
+                    });
+                }
+            });
+        });
     })
 
     describe('controller', function() {
