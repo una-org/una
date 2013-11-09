@@ -154,7 +154,7 @@ describe('una', function() {
             controller.emit('register-controller', {room: room_data.room, user_data: user_data});
             socket.on('controller-join', function(data) {
                 ack = true;
-                socket.emit('acknowledge-controller', data.socket_info.id);
+                socket.emit('acknowledge-controller', {controller_id: data.socket_info.id, success: true});
             });
 
             controller.on('controller-ready', function(data) {
@@ -209,7 +209,7 @@ describe('una', function() {
             c2.emit('register-controller', {room: room_data.room, user_data: c2_user_data});
 
             socket.on('controller-join', function(data) {
-                socket.emit('acknowledge-controller', data.socket_info.id);
+                socket.emit('acknowledge-controller', {controller_id: data.socket_info.id, success: true});
             });
 
 
@@ -231,7 +231,7 @@ describe('una', function() {
             c1.emit('register-controller', {room: room_data.room, user_data: c1_user_data});
 
             socket.on('controller-join', function(data) {
-                socket.emit('acknowledge-controller', data.socket_info.id);
+                socket.emit('acknowledge-controller', {controller_id: data.socket_info.id, success: true});
             });
 
             c1.on('controller-ready', function(data) {
