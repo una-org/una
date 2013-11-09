@@ -26,6 +26,7 @@
   "devDependencies": {
     "mocha": "",
     "should": "",
-    "supertest": ""
+    "supertest": "",
+    "socket.io-client": ""
   }
 }
