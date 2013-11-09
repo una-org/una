@@ -1,0 +1,31 @@
+{
+  "name": "Una",
+  "version": "0.0.1",
+  "description": "Una",
+  "main": "una.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "mocha test/*.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/soedar/Una.git"
+  },
+  "author": "soedar",
+  "license": "BSD-2-Clause",
+  "bugs": {
+    "url": "https://github.com/soedar/Una/issues"
+  },
+
+  "dependencies": {
+    "express": "",
+    "socket.io": ""
+  },
+
+  "devDependencies": {
+    "mocha": "",
+    "should": ""
+  }
+}
