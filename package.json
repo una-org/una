@@ -2,7 +2,6 @@
   "name": "Una",
   "version": "0.0.1",
   "description": "Una",
-  "main": "una.js",
   "directories": {
     "test": "test"
   },
