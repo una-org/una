@@ -131,24 +131,24 @@ describe('una', function() {
 
         it('should be able to join a screen', function(done) {
             var controller = new_socket();
-            var payload = {name: 'controller1'};
+            var user_data = {name: 'controller1'};
 
-            controller.emit('register-controller', {room: room_data.room, payload: payload});
+            controller.emit('register-controller', {room: room_data.room, user_data: user_data});
             socket.on('controller-join', function(data) {
-                if (data.payload.name == 'controller1')
+                if (data.socket_info.user_data.name == 'controller1')
                     done();
             });
         });
 
         it('should be ready only after acknowledged by screen', function(done) {
             var controller = new_socket();
-            var payload = {name: 'controller1'};
+            var user_data = {name: 'controller1'};
             var ack = false;
 
-            controller.emit('register-controller', {room: room_data.room, payload: payload});
+            controller.emit('register-controller', {room: room_data.room, user_data: user_data});
             socket.on('controller-join', function(data) {
                 ack = true;
-                socket.emit('acknowledge-controller', data);
+                socket.emit('acknowledge-controller', data.socket_info.id);
             });
 
             controller.on('controller-ready', function(data) {
@@ -158,14 +158,14 @@ describe('una', function() {
 
         it('s should be able to join a screen', function(done) {
             c1 = new_socket();
-            c1_payload = {name: 'controller1'};
+            c1_user_data = {name: 'controller1'};
             c2 = new_socket();
-            c2_payload = {name: 'controller2'};
+            c2_user_data = {name: 'controller2'};
 
             var total_count = 0;
 
-            c1.emit('register-controller', {room: room_data.room, payload: c1_payload});
-            c2.emit('register-controller', {room: room_data.room, payload: c2_payload});
+            c1.emit('register-controller', {room: room_data.room, user_data: c1_user_data});
+            c2.emit('register-controller', {room: room_data.room, user_data: c2_user_data});
             socket.on('controller-join', function(data) {
                 total_count++;
                 if (total_count == 2)
@@ -196,14 +196,14 @@ describe('una', function() {
 
         it('should be informed when a controller leave', function(done) {
             var c1 = new_socket();
-            var c1_payload = {name: 'controller1'};
+            var c1_user_data = {name: 'controller1'};
             var c2 = new_socket();
-            var c2_payload = {name: 'controller2'};
-            c1.emit('register-controller', {room: room_data.room, payload: c1_payload});
-            c2.emit('register-controller', {room: room_data.room, payload: c2_payload});
+            var c2_user_data = {name: 'controller2'};
+            c1.emit('register-controller', {room: room_data.room, user_data: c1_user_data});
+            c2.emit('register-controller', {room: room_data.room, user_data: c2_user_data});
 
             socket.on('controller-join', function(data) {
-                socket.emit('acknowledge-controller', {id: data.id});
+                socket.emit('acknowledge-controller', data.socket_info.id);
             });
 
 
@@ -213,11 +213,29 @@ describe('una', function() {
             });
 
             socket.on('controller-leave', function(data) {
-                if (data.payload.name == 'controller1') {
+                if (data.socket_info.user_data.name == 'controller1') {
                     done();
                 }
             });
+        });
 
+        it('should be able to send input', function(done) {
+            var c1 = new_socket();
+            var c1_user_data = {name: 'controller1'};
+            c1.emit('register-controller', {room: room_data.room, user_data: c1_user_data});
+
+            socket.on('controller-join', function(data) {
+                socket.emit('acknowledge-controller', data.socket_info.id);
+            });
+
+            c1.on('controller-ready', function(data) {
+                c1.emit('controller-input', {shoot: true});
+            });
+
+            socket.on('controller-input', function(data) {
+                if (data.payload.shoot)
+                    done();
+            });
         });
     });
 });
