@@ -206,7 +206,7 @@ describe('una', function() {
                 socket.emit('acknowledge-controller', {id: data.id});
             });
 
-            
+
             c1.on('controller-ready', function(data) {
                 if (data.success)
                     c1.disconnect();
