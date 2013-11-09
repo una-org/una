@@ -44,7 +44,7 @@ function rttHeartBeat() {
 
   setTimeout(function() {
     if (timings.length < 5) {
-      document.getElementById('ping').innerHTML = 'Reconnecting ... (Latency > '+INTERVAL_HEART_BEAT+' ms)';
+        console.log('Reconnecting ... (Latency > '+INTERVAL_HEART_BEAT+' ms)');
     }
   }, INTERVAL_HEART_BEAT)
 }
