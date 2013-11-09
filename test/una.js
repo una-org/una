@@ -7,7 +7,7 @@ var ioc = require('socket.io-client');
 
 var start_una = function() {
     var una = una_js();
-    var server = http.createServer().listen(3000);
+    var server = http.createServer(una.app).listen(3000);
     una.listen(server);
     return server;
 }
@@ -19,6 +19,12 @@ var new_socket = function() {
 var server = start_una();
 
 describe('una', function() {
+    describe('static files', function() {
+        it('should be able to get una client file', function(done) {
+            request(server).get('/una_js/una.js').expect(200, done)
+        });
+    });
+
     describe('running of server', function() {
         var socket;
 
