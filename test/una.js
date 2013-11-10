@@ -6,13 +6,15 @@ var request = require('supertest');
 var ioc = require('socket.io-client');
 
 var start_una = function() {
-    var server = http.createServer(una.app).listen(3000);
+    var server = http.createServer(una.app).listen();
     una.listen(server);
     return server;
 }
 
-var new_socket = function() {
-    return ioc.connect('http://localhost:3000', {'force new connection': true});
+var new_socket = function(server) {
+    var address = server.address();
+    var url = 'http://' + address.address + ':' + address.port;
+    return ioc.connect(url, {'force new connection': true});
 }
 
 var server = start_una();
@@ -26,7 +28,7 @@ describe('una', function() {
 
     describe('server', function() {
         it('should be able to listen on port number', function(done) {
-            var una = require('..').listen(3001);
+            var una = require('..').listen();
             request(una.server).get('/una_js/una.js').expect(200, done);
         });
     })
@@ -35,7 +37,7 @@ describe('una', function() {
         var socket;
 
         beforeEach(function(done) {
-            socket = new_socket();
+            socket = new_socket(server);
             socket.on('connect', function() {
                 done();
             })
@@ -60,7 +62,7 @@ describe('una', function() {
         var socket;
 
         beforeEach(function(done) {
-            socket = new_socket();
+            socket = new_socket(server);
             socket.on('connect', function() {
                 done();
             })
@@ -89,7 +91,7 @@ describe('una', function() {
                 if (data.success) {
                     // We now have one screen, we try make another screen
                     // join the same room
-                    var s2 = new_socket();
+                    var s2 = new_socket(server);
                     s2.emit('register-screen', room_data);
                     s2.on('screen-ready', function(data) {
                         if (!data.success) {
@@ -110,7 +112,7 @@ describe('una', function() {
                     socket.disconnect();
                     // Since the screen has been disconnected, new screen should be able to
                     // join the same id
-                    var s2 = new_socket();
+                    var s2 = new_socket(server);
                     s2.emit('register-screen', room_data);
                     s2.on('screen-ready', function(data) {
                         if (data.success) {
@@ -128,7 +130,7 @@ describe('una', function() {
         var room_data = {room: '123'};
 
         beforeEach(function(done) {
-            socket = new_socket();
+            socket = new_socket(server);
             socket.on('connect', function() {
                 socket.emit('register-screen', room_data);
                 done();
@@ -142,7 +144,7 @@ describe('una', function() {
         });
 
         it('should be able to join a screen', function(done) {
-            var controller = new_socket();
+            var controller = new_socket(server);
             var user_data = {name: 'controller1'};
 
             controller.emit('register-controller', {room: room_data.room, user_data: user_data});
@@ -153,7 +155,7 @@ describe('una', function() {
         });
 
         it('should be ready only after acknowledged by screen', function(done) {
-            var controller = new_socket();
+            var controller = new_socket(server);
             var user_data = {name: 'controller1'};
             var ack = false;
 
@@ -169,9 +171,9 @@ describe('una', function() {
         });
 
         it('s should be able to join a screen', function(done) {
-            c1 = new_socket();
+            c1 = new_socket(server);
             c1_user_data = {name: 'controller1'};
-            c2 = new_socket();
+            c2 = new_socket(server);
             c2_user_data = {name: 'controller2'};
 
             var total_count = 0;
@@ -193,7 +195,7 @@ describe('una', function() {
         var room_data = {room: '123'};
 
         beforeEach(function(done) {
-            socket = new_socket();
+            socket = new_socket(server);
             socket.on('connect', function() {
                 socket.emit('register-screen', room_data);
                 done();
@@ -207,9 +209,9 @@ describe('una', function() {
         });
 
         it('should be informed when a controller leave', function(done) {
-            var c1 = new_socket();
+            var c1 = new_socket(server);
             var c1_user_data = {name: 'controller1'};
-            var c2 = new_socket();
+            var c2 = new_socket(server);
             var c2_user_data = {name: 'controller2'};
             c1.emit('register-controller', {room: room_data.room, user_data: c1_user_data});
             c2.emit('register-controller', {room: room_data.room, user_data: c2_user_data});
@@ -232,7 +234,7 @@ describe('una', function() {
         });
 
         it('should be able to send input from controller', function(done) {
-            var c1 = new_socket();
+            var c1 = new_socket(server);
             var c1_user_data = {name: 'controller1'};
             c1.emit('register-controller', {room: room_data.room, user_data: c1_user_data});
 
@@ -252,7 +254,7 @@ describe('una', function() {
 
 
         it('should be able to send input from screen', function(done) {
-            var c1 = new_socket();
+            var c1 = new_socket(server);
             var c1_user_data = {name: 'controller1'};
             c1.emit('register-controller', {room: room_data.room, user_data: c1_user_data});
 
