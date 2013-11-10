@@ -25,6 +25,14 @@ describe('una', function() {
         });
     });
 
+    describe('server', function() {
+        it('should be able to listen on port number', function(done) {
+            var una = una_js();
+            una.listen(3001);
+            request(una.server).get('/una_js/una.js').expect(200, done);
+        });
+    })
+
     describe('running of server', function() {
         var socket;
 
