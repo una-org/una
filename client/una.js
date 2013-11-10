@@ -38,12 +38,15 @@ var RoomState = function(socket, room_id) {
 };
 
 var UnaController = (function() {
+    var room_state = null;
+
     var register = function(room_id, user_data, callback) {
         socket.emit('register-controller', {room: room_id, user_data: user_data});
 
         socket.on('controller-ready', function(data) {
             if (callback) {
                 callback(data);
+                room_state = RoomState(socket, room_id);
             }
         });
     }
@@ -58,9 +61,19 @@ var UnaController = (function() {
         socket.emit('controller-input', user_data);
     }
 
+    var setRoomData = function(key, data) {
+        room_state.setData(key, data);
+    }
+
+    var getRoomData = function(key, callback) {
+        room_state.getData(key, callback);
+    }
+
     return {register: register, 
             sendToScreen: sendToScreen,
-            onScreenInput: onScreenInput};
+            onScreenInput: onScreenInput,
+            setRoomData: setRoomData,
+            getRoomData: getRoomData};
 })();
 
 var UnaScreen = (function() {
@@ -69,7 +82,7 @@ var UnaScreen = (function() {
     var leave_callback = function() {}
 
     var room_state = null;
-
+    
     var register = function(room_id, user_data, callback) {
         socket.emit('register-screen', {room: room_id, user_data: user_data});
 
