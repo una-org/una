@@ -46,4 +46,5 @@ UnaController.onScreenInput(function (data) {
 ```
 
 ## Next Steps
-- Allow the server to store global state that is accessible by screens and controllers
+- Create a screenless mode, where a small game state is stored on the server, and the screen merely processes the change in the game state from the server/controller. (Means support for multiple screen woots)
+- More comprehensive test cases
