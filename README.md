@@ -44,3 +44,6 @@ UnaController.onScreenInput(function (data) {
 });
 </script>
 ```
+
+## Next Steps
+- Allow the server to store global state that is accessible by screens and controllers
