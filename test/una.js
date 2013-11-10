@@ -278,7 +278,6 @@ describe('una', function() {
             });
         });
     });
-    /*
     describe('states', function() {
         var socket;
         var room_data = {room: '123'};
@@ -308,5 +307,4 @@ describe('una', function() {
             });
         });
     });
-    */
 });
