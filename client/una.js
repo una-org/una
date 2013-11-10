@@ -20,12 +20,12 @@ var UnaController = (function() {
         });
     }
 
-    var sendInput = function(user_data) {
+    var sendToScreen = function(user_data) {
         socket.emit('controller-input', user_data);
     }
 
     return {register: register, 
-            sendInput: sendInput,
+            sendToScreen: sendToScreen,
             onScreenInput: onScreenInput};
 })();
 
@@ -64,7 +64,7 @@ var UnaScreen = (function() {
         });
     }
 
-    var sendInput = function(controller_id, user_data) {
+    var sendToController = function(controller_id, user_data) {
         // Check if the controller we are sending to exists
         if (controllerList.indexOf(controller_id) > -1) {
             socket.emit('screen-input', controller_id, user_data);
@@ -75,6 +75,6 @@ var UnaScreen = (function() {
         onControllerJoin: onControllerJoin, 
         onControllerLeave: onControllerLeave, 
         onControllerInput: onControllerInput,
-        sendInput: sendInput,
+        sendToController: sendToController,
         controllerIds: function() {return controllerList}};
 })();
