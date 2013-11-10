@@ -1,9 +1,11 @@
 # Una: 
 
+[![Build Status](https://travis-ci.org/soedar/una.png)](https://travis-ci.org/soedar/una)
+
 ## Server
 ```javascript
 var path = require('path');
-var una = require('una').listen(3216)
+var una = require('una').listen(3216);
 var express = una.express;
 var app = una.app;
 
@@ -17,9 +19,6 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 <script>
 UnaScreen.register('room1', 'screen');
-UnaScreen.onControllerJoin(function (data) {
-    return true;
-});
 
 UnaScreen.onControllerInput(function (data) {
     // controller1 says woof
@@ -36,9 +35,7 @@ UnaScreen.onControllerInput(function (data) {
 
 <script>
 UnaController.register('room1', 'controller1', function(res) {
-    if (res.success) {
-        UnaController.sendToScreen('woof');
-    }
+    UnaController.sendToScreen('woof');
 });
 
 UnaController.onScreenInput(function (data) {
