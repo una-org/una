@@ -1,12 +1,11 @@
 var express = require('express');
-var una_js = require('..');
+var una = require('..');
 var should = require('should');
 var http = require('http');
 var request = require('supertest');
 var ioc = require('socket.io-client');
 
 var start_una = function() {
-    var una = una_js();
     var server = http.createServer(una.app).listen(3000);
     una.listen(server);
     return server;
@@ -27,8 +26,7 @@ describe('una', function() {
 
     describe('server', function() {
         it('should be able to listen on port number', function(done) {
-            var una = una_js();
-            una.listen(3001);
+            var una = require('..').listen(3001);
             request(una.server).get('/una_js/una.js').expect(200, done);
         });
     })
