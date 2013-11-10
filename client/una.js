@@ -10,7 +10,8 @@ var UnaController = (function() {
         socket.emit('register-controller', {room: room_id, user_data: user_data});
 
         socket.on('controller-ready', function(data) {
-            callback(data);
+            if (callback)
+                callback(data);
         });
     }
 
@@ -36,7 +37,8 @@ var UnaScreen = (function() {
         socket.emit('register-screen', {room: room_id, user_data: user_data});
 
         socket.on('screen-ready', function(data) {
-            callback(data);
+            if (callback)
+                callback(data);
         });
     }
 
