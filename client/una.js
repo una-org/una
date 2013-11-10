@@ -45,7 +45,6 @@ var UnaScreen = (function() {
 
         socket.on('controller-join', function(data) {
             controllerList.push(data.una.id);
-            console.log(join_callback);
             var success = join_callback(data);
             socket.emit('acknowledge-controller', {controller_id: data.una.id, success: success});
         });
