@@ -300,10 +300,12 @@ describe('una', function() {
         });
 
         it('should be able to be stored by screen and controllers', function(done) {
-            socket.emit('store-state', 'key', 'value');
-            socket.emit('get-state', 'reqid0', 'key');
-            socket.on('state-data', function(reqid, key, data) {
-                console.log(reqid + ' ' + data);
+            socket.emit('store-room-data', 'key0', 'value0');
+            socket.emit('get-room-data', 'reqid0', 'key0');
+            socket.on('room-data', function(reqid, key, data) {
+                if (reqid == 'reqid0' && key == 'key0' && data == 'value0') {
+                    done();
+                }
             });
         });
     });
