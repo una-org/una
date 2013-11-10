@@ -32,6 +32,8 @@ var UnaController = (function() {
 
 var UnaScreen = (function() {
     var controllerList = [];
+    var join_callback = function() {return true;}
+    var leave_callback = function() {}
 
     var register = function(room_id, user_data, callback) {
         socket.emit('register-screen', {room: room_id, user_data: user_data});
@@ -40,24 +42,28 @@ var UnaScreen = (function() {
             if (callback)
                 callback(data);
         });
+
+        socket.on('controller-join', function(data) {
+            controllerList.push(data.una.id);
+            var success = join_callback(data);
+            socket.emit('acknowledge-controller', {controller_id: data.una.id, success: success});
+        });
+
+        socket.on('controller-leave', function(data) {
+            var index = controllerList.indexOf(data.una.id);
+            controllerList.splice(index, 1);
+            leave_callback(data);
+        });
     }
 
     // This method should only be called once
     var onControllerJoin = function(callback) {
-        socket.on('controller-join', function(data) {
-            controllerList.push(data.una.id);
-            var success = callback(data);
-            socket.emit('acknowledge-controller', {controller_id: data.una.id, success: success});
-        });
+        join_callback = callback;
     }
 
     // This method should only be called once
     var onControllerLeave = function(callback) {
-        socket.on('controller-leave', function(data) {
-            var index = controllerList.indexOf(data.una.id);
-            controllerList.splice(index, 1);
-            callback(data);
-        });
+        leave_callback = callback;
     }
 
     var onControllerInput = function(callback) {
