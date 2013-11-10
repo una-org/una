@@ -278,4 +278,35 @@ describe('una', function() {
             });
         });
     });
+    /*
+    describe('states', function() {
+        var socket;
+        var room_data = {room: '123'};
+
+        beforeEach(function(done) {
+            socket = new_socket(server);
+            socket.on('connect', function() {
+                socket.emit('register-screen', room_data);
+                done();
+            });
+            socket.on('controller-join', function(data) {
+                socket.emit('acknowledge-controller', {success: true});
+            });
+        });
+        afterEach(function(done) {
+            if (socket.socket.connected) {
+                socket.disconnect();
+            }
+            done();
+        });
+
+        it('should be able to be stored by screen and controllers', function(done) {
+            socket.emit('store-state', 'key', 'value');
+            socket.emit('get-state', 'reqid0', 'key');
+            socket.on('state-data', function(reqid, key, data) {
+                console.log(reqid + ' ' + data);
+            });
+        });
+    });
+    */
 });
