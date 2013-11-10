@@ -1,4 +1,4 @@
-var states = require('../lib/room_state');
+var states = require('../lib/room_states');
 var should = require('should');
 
 describe('room states', function() {
