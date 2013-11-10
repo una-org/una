@@ -1,6 +1,6 @@
 {
   "name": "una",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Una",
   "directories": {
     "test": "test"
@@ -10,12 +10,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/soedar/Una.git"
+    "url": "https://github.com/soedar/una.git"
   },
   "author": "soedar",
-  "license": "BSD-2-Clause",
   "bugs": {
-    "url": "https://github.com/soedar/Una/issues"
+    "url": "https://github.com/soedar/una/issues"
   },
 
   "dependencies": {
