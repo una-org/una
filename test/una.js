@@ -225,7 +225,7 @@ describe('una', function() {
             });
         });
 
-        it('should be able to send input', function(done) {
+        it('should be able to send input from controller', function(done) {
             var c1 = new_socket();
             var c1_user_data = {name: 'controller1'};
             c1.emit('register-controller', {room: room_data.room, user_data: c1_user_data});
@@ -241,6 +241,32 @@ describe('una', function() {
             socket.on('controller-input', function(data) {
                 if (data.payload.shoot)
                     done();
+            });
+        });
+
+
+        it('should be able to send input from screen', function(done) {
+            var c1 = new_socket();
+            var c1_user_data = {name: 'controller1'};
+            c1.emit('register-controller', {room: room_data.room, user_data: c1_user_data});
+
+            var c1_id;
+            socket.on('controller-join', function(data) {
+                c1_id = data.una.id;
+                socket.emit('acknowledge-controller', {controller_id: data.una.id, success: true});
+            });
+
+            c1.on('controller-ready', function(data) {
+                c1.emit('controller-input', {shoot: true});
+            });
+
+            c1.on('screen-input', function(data) {
+                if (data.payload.success)
+                    done();
+            });
+
+            socket.on('controller-input', function(data) {
+                socket.emit('screen-input', c1_id, {success: true});
             });
         });
     });

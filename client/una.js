@@ -14,12 +14,19 @@ var UnaController = (function() {
         });
     }
 
+    var onScreenInput = function(callback) {
+        socket.on('screen-input', function(data) {
+            callback(data);
+        });
+    }
+
     var sendInput = function(user_data) {
         socket.emit('controller-input', user_data);
     }
 
     return {register: register, 
-            sendInput: sendInput};
+            sendInput: sendInput,
+            onScreenInput: onScreenInput};
 })();
 
 var UnaScreen = (function() {
@@ -50,8 +57,27 @@ var UnaScreen = (function() {
         });
     }
 
+    var sendInput = function(controller_id, user_data) {
+        // Check if the controller we are sending to exists
+        if (controllerList.indexOf(controller_id)) {
+            socket.emit('screen-input', controller_id, user_data);
+        }
+    }
+
+    var controllerList = [];
+    onControllerJoin(function(data) {
+        controllerList.push(data.una.id);
+    });
+
+    onControllerLeave(function(data) {
+        var index = controllerList.indexOf(data.una.id);
+        controllerList.splice(index, 1);
+    })
+
     return {register: register, 
         onControllerJoin: onControllerJoin, 
         onControllerLeave: onControllerLeave, 
-        onControllerInput: onControllerInput};
+        onControllerInput: onControllerInput,
+        sendInput: sendInput,
+        controllerIds: function() {return controllerList}};
 })();
