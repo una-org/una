@@ -241,10 +241,10 @@ describe('una', function() {
             });
 
             c1.on('controller-ready', function(data) {
-                c1.emit('controller-input', {shoot: true});
+                c1.emit('controller-to-screen', {shoot: true});
             });
 
-            socket.on('controller-input', function(data) {
+            socket.on('controller-to-screen', function(data) {
                 if (data.payload.shoot)
                     done();
             });
@@ -262,16 +262,16 @@ describe('una', function() {
             });
 
             c1.on('controller-ready', function(data) {
-                c1.emit('controller-input', {shoot: true});
+                c1.emit('controller-to-screen', {shoot: true});
             });
 
-            c1.on('screen-input', function(data) {
+            c1.on('screen-to-controller', function(data) {
                 if (data.payload.success)
                     done();
             });
 
-            socket.on('controller-input', function(data) {
-                socket.emit('screen-input', c1_id, {success: true});
+            socket.on('controller-to-screen', function(data) {
+                socket.emit('screen-to-controller', c1_id, {success: true});
             });
         });
     });

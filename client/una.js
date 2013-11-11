@@ -23,13 +23,13 @@ var UnaController = (function() {
     }
 
     var onScreenInput = function(callback) {
-        socket.on('screen-input', function(data) {
+        socket.on('screen-to-controller', function(data) {
             callback(data);
         });
     }
 
     var sendToScreen = function(user_data) {
-        socket.emit('controller-input', user_data);
+        socket.emit('controller-to-screen', user_data);
     }
 
 
@@ -76,7 +76,7 @@ var UnaScreen = (function() {
     }
 
     var onControllerInput = function(callback) {
-        socket.on('controller-input', function(data) {
+        socket.on('controller-to-screen', function(data) {
             callback(data);
         });
     }
@@ -84,7 +84,7 @@ var UnaScreen = (function() {
     var sendToController = function(controller_id, user_data) {
         // Check if the controller we are sending to exists
         if (controllerList.indexOf(controller_id) > -1) {
-            socket.emit('screen-input', controller_id, user_data);
+            socket.emit('screen-to-controller', controller_id, user_data);
         }
     }
 
