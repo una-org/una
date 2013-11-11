@@ -288,12 +288,78 @@ describe('una', function() {
     describe('screenless mode', function() {
         describe('server initialization', function() {
                 it('should be possible', function(done) {
-                var una_server = require('..');
-                una_server.enableScreenless();
-                una_server.screenless.initState = function(UnaServer, una_header, payload) {
-                    return {gamestate: null};
-                };
+                var una_server = screenless_una();
                 done();
+            });
+        });
+
+        describe('game state', function() {
+            it('should be able to be set', function(done) {
+                var una = screenless_una();
+                una.screenless.initState = function() {
+                    return "abc";
+                }
+                una.screenless.onScreenInput = function(UnaServer, una_header, payload) {
+                    UnaServer.setState(payload);
+                    UnaServer.sendToScreens(UnaServer.getState());
+                }
+                una.listen();
+
+                var scn = new_socket(una.server);
+                scn.emit('register-screen', {room: '123'});
+                scn.on('screen-ready', function(res) {
+                    if (res.state == "abc") {
+                        scn.emit('screen-to-server', 'def');
+                    }
+                });
+
+                scn.on('server-to-screen', function(res) {
+                    if (res.payload == 'def') {
+                        done();
+                    }
+                });
+            });
+
+            it('should be tied to the same room', function(done) {
+                var una = screenless_una();
+                una.screenless.initState = function() {
+                    return "abc";
+                }
+                una.screenless.onScreenInput = function(UnaServer, una_header, payload) {
+                    UnaServer.setState(payload);
+                    UnaServer.sendToScreens(UnaServer.getState());
+                }
+                una.listen();
+
+                var scn = new_socket(una.server)
+                var scn2 = new_socket(una.server)
+                scn.emit('register-screen', {room: '123'});
+
+                var count = 2;
+                scn.on('screen-ready', function(res) {
+                    if (res.success) {
+                        if (res.state == "abc") {
+                            scn.emit('screen-to-server', 'hello from screen');
+                        }
+                    }
+                    scn2.emit('register-screen', {room: '111'});
+                });
+
+                scn.on('server-to-screen', function(res) {
+                    if (res.payload == 'hello from screen') {
+                        count--;
+                        if (count == 0) done();
+                    }
+                });
+
+                scn2.on('screen-ready', function(res) {
+                    if (res.success) {
+                        if (res.state == "abc") {
+                            count--;
+                            if (count == 0) done();
+                        }
+                    }
+                });
             });
         });
 
@@ -318,7 +384,7 @@ describe('una', function() {
                 });
             });
         });
-
+/*
         describe('controller', function() {
             it('should be able to send to server', function(done) {
                 var una = screenless_una();
@@ -338,5 +404,6 @@ describe('una', function() {
                 }
             });
         });
+*/
     });
 });

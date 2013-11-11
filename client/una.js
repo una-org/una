@@ -11,7 +11,6 @@ function randomString(len) {
 }
 
 var UnaController = (function() {
-
     var register = function(room_id, user_data, callback) {
         socket.emit('register-controller', {room: room_id, user_data: user_data});
 
