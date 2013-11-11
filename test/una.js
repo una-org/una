@@ -186,8 +186,6 @@ describe('una', function() {
                     done();
             });
         });
-
-
     });
 
     describe('screen and controllers', function() {
@@ -252,7 +250,6 @@ describe('una', function() {
             });
         });
 
-
         it('should be able to send input from screen', function(done) {
             var c1 = new_socket(server);
             var c1_user_data = {name: 'controller1'};
@@ -275,6 +272,44 @@ describe('una', function() {
 
             socket.on('controller-input', function(data) {
                 socket.emit('screen-input', c1_id, {success: true});
+            });
+        });
+    });
+
+    describe('screenless mode', function() {
+        describe('server initialization', function() {
+                it('should be possible', function(done) {
+                var una_server = require('..');
+                una_server.enableScreenless();
+                una_server.screenless.initState = function(UnaServer, una_header, payload) {
+                    return {gamestate: null};
+                };
+                done();
+            });
+        });
+
+        describe('screen', function() {
+            it('should be able to send to server', function(done) {
+                var una = require('..');
+                una.enableScreenless();
+                una.screenless.initState = function(UnaServer, una_header, payload) {
+                    return {gamestate: null};
+                };
+
+                una.screenless.onScreenInput = function(UnaServer, una_header, payload) {
+                    if (payload == 'hello from screen') {
+                        done();
+                    }
+                }
+                una.listen();
+
+                var scn = new_socket(una.server)
+                scn.emit('register-screen', {room: '123'});
+                scn.on('screen-ready', function(res) {
+                    if (res.success) {
+                        scn.emit('screen-to-server', 'hello from screen');
+                    }
+                });
             });
         });
     });
