@@ -17,6 +17,15 @@ var new_socket = function(server) {
     return ioc.connect(url, {'force new connection': true});
 }
 
+var screenless_una = function() {
+    var una = require('..');
+    una.enableScreenless();
+    una.screenless.initState = function(UnaServer, una_header, payload) {
+        return "game_state";
+    };
+    return una;
+}
+
 var server = start_una();
 
 describe('una', function() {
@@ -290,12 +299,7 @@ describe('una', function() {
 
         describe('screen', function() {
             it('should be able to send to server', function(done) {
-                var una = require('..');
-                una.enableScreenless();
-                una.screenless.initState = function(UnaServer, una_header, payload) {
-                    return {gamestate: null};
-                };
-
+                var una = screenless_una();
                 una.screenless.onScreenInput = function(UnaServer, una_header, payload) {
                     if (payload == 'hello from screen') {
                         done();
@@ -307,9 +311,31 @@ describe('una', function() {
                 scn.emit('register-screen', {room: '123'});
                 scn.on('screen-ready', function(res) {
                     if (res.success) {
-                        scn.emit('screen-to-server', 'hello from screen');
+                        if (res.state == "game_state") {
+                            scn.emit('screen-to-server', 'hello from screen');
+                        }
                     }
                 });
+            });
+        });
+
+        describe('controller', function() {
+            it('should be able to send to server', function(done) {
+                var una = screenless_una();
+                una.screenless.onControllerInput = function(UnaServer, una_header, payload) {
+                    if (payload == 'hello from controller') {
+                        done();
+                    }
+                }
+                una.listen();
+            });
+
+            var c1 = new_socket(una.server);
+            c1.emit('register-controller', {room: '123'});
+            c1.on('controller-ready', function(res) {
+                if (res.success) {
+                    c1.emit('controller-to-server', 'hello from controller');
+                }
             });
         });
     });
