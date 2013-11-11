@@ -384,7 +384,7 @@ describe('una', function() {
                 });
             });
         });
-/*
+
         describe('controller', function() {
             it('should be able to send to server', function(done) {
                 var una = screenless_una();
@@ -394,16 +394,19 @@ describe('una', function() {
                     }
                 }
                 una.listen();
-            });
 
-            var c1 = new_socket(una.server);
-            c1.emit('register-controller', {room: '123'});
-            c1.on('controller-ready', function(res) {
-                if (res.success) {
-                    c1.emit('controller-to-server', 'hello from controller');
-                }
+                var c1 = new_socket(una.server)
+                c1.emit('register-controller', {room: '123'});
+                c1.on('controller-ready', function(res) {
+                    console.log("controller ready");
+                    if (res.success) {
+                        if (res.state == "game_state") {
+                            c1.emit('controller-to-server', 'hello from controller');
+                        }
+                    }
+                });
             });
         });
-*/
+        
     });
 });
