@@ -10,35 +10,7 @@ function randomString(len) {
   return Math.random().toString(36).slice(2,len+2);
 }
 
-// Room State
-var RoomState = function(socket, room_id) {
-    var requests = {};
-
-    // Keep listening for room data events
-    socket.on('room-data', function(req_id, key, data) {
-        if (req_id in requests) {
-            requests[req_id](key, data);
-            delete requests[req_id];
-        }
-    });
-
-    var getData = function(key, callback) {
-        var req_id;
-        while ((req_id = randomString(8)) in requests);
-        requests[req_id] = callback;
-
-        socket.emit('get-room-data', req_id, key);
-    };
-
-    var setData = function(key, data) {
-        socket.emit('set-room-data', key, data);
-    };
-
-    return {setData: setData, getData: getData};
-};
-
 var UnaController = (function() {
-    var room_state = null;
 
     var register = function(room_id, user_data, callback) {
         socket.emit('register-controller', {room: room_id, user_data: user_data});
@@ -46,7 +18,6 @@ var UnaController = (function() {
         socket.on('controller-ready', function(data) {
             if (callback) {
                 callback(data);
-                room_state = RoomState(socket, room_id);
             }
         });
     }
@@ -61,19 +32,10 @@ var UnaController = (function() {
         socket.emit('controller-input', user_data);
     }
 
-    var setRoomData = function(key, data) {
-        room_state.setData(key, data);
-    }
-
-    var getRoomData = function(key, callback) {
-        room_state.getData(key, callback);
-    }
 
     return {register: register, 
             sendToScreen: sendToScreen,
-            onScreenInput: onScreenInput,
-            setRoomData: setRoomData,
-            getRoomData: getRoomData};
+            onScreenInput: onScreenInput};
 })();
 
 var UnaScreen = (function() {
@@ -81,15 +43,12 @@ var UnaScreen = (function() {
     var join_callback = function() {return true;}
     var leave_callback = function() {}
 
-    var room_state = null;
-    
     var register = function(room_id, user_data, callback) {
         socket.emit('register-screen', {room: room_id, user_data: user_data});
 
         socket.on('screen-ready', function(data) {
             if (callback) {
                 callback(data);
-                room_state = RoomState(socket, room_id);
             }
         });
 
@@ -129,20 +88,10 @@ var UnaScreen = (function() {
         }
     }
 
-    var setRoomData = function(key, data) {
-        room_state.setData(key, data);
-    }
-
-    var getRoomData = function(key, callback) {
-        room_state.getData(key, callback);
-    }
-
     return {register: register, 
         onControllerJoin: onControllerJoin, 
         onControllerLeave: onControllerLeave, 
         onControllerInput: onControllerInput,
         sendToController: sendToController,
-        setRoomData: setRoomData,
-        getRoomData: getRoomData,
         controllerIds: function() {return controllerList}};
 })();
