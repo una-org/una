@@ -20,9 +20,9 @@ var new_socket = function(server) {
 var screenless_una = function() {
     var una = require('..');
     una.enableScreenless();
-    una.screenless.initState = function() {
+    una.screenless.registerInitState(function() {
         return "game_state";
-    };
+    });
     return una;
 }
 
@@ -250,12 +250,13 @@ describe('una', function() {
             });
 
             c1.on('controller-ready', function(data) {
-                c1.emit('controller-to-screen', {shoot: true});
+                c1.emit('controller-to-screen', 'shoot', true);
             });
 
             socket.on('controller-to-screen', function(data) {
-                if (data.payload.shoot)
+                if (data.key == 'shoot' && data.payload) {
                     done();
+                }
             });
         });
 
@@ -271,16 +272,16 @@ describe('una', function() {
             });
 
             c1.on('controller-ready', function(data) {
-                c1.emit('controller-to-screen', {shoot: true});
+                c1.emit('controller-to-screen', 'shoot', true);
             });
 
             c1.on('screen-to-controller', function(data) {
-                if (data.payload.success)
+                if (data.key == 'success' && data.payload) 
                     done();
             });
 
             socket.on('controller-to-screen', function(data) {
-                socket.emit('screen-to-controller', c1_id, {success: true});
+                socket.emit('screen-to-controller', c1_id, 'success', true);
             });
         });
     });
@@ -296,25 +297,25 @@ describe('una', function() {
         describe('game state', function() {
             it('should be able to be set', function(done) {
                 var una = screenless_una();
-                una.screenless.initState = function() {
+                una.screenless.registerInitState(function() {
                     return "abc";
-                }
-                una.screenless.onScreenInput = function(UnaServer, una_header, payload) {
+                });
+                una.screenless.registerOnScreenInput('mykey', function(UnaServer, una_header, payload) {
                     UnaServer.setState(payload);
-                    UnaServer.sendToScreens(UnaServer.getState());
-                }
+                    UnaServer.sendToScreens('mykey2', UnaServer.getState());
+                });
                 una.listen();
 
                 var scn = new_socket(una.server);
                 scn.emit('register-screen', {room: '123'});
                 scn.on('screen-ready', function(res) {
                     if (res.state == "abc") {
-                        scn.emit('screen-to-server', 'def');
+                        scn.emit('screen-to-server', 'mykey', 'def');
                     }
                 });
 
                 scn.on('server-to-screen', function(res) {
-                    if (res.payload == 'def') {
+                    if (res.key == 'mykey2' && res.payload == 'def') {
                         done();
                     }
                 });
@@ -322,13 +323,13 @@ describe('una', function() {
 
             it('should be tied to the same room', function(done) {
                 var una = screenless_una();
-                una.screenless.initState = function() {
+                una.screenless.registerInitState(function() {
                     return "abc";
-                }
-                una.screenless.onScreenInput = function(UnaServer, una_header, payload) {
+                });
+                una.screenless.registerOnScreenInput('hellokey', function(UnaServer, una_header, payload) {
                     UnaServer.setState(payload);
-                    UnaServer.sendToScreens(UnaServer.getState());
-                }
+                    UnaServer.sendToScreens('hellokey', UnaServer.getState());
+                });
                 una.listen();
 
                 var scn = new_socket(una.server)
@@ -339,14 +340,14 @@ describe('una', function() {
                 scn.on('screen-ready', function(res) {
                     if (res.success) {
                         if (res.state == "abc") {
-                            scn.emit('screen-to-server', 'hello from screen');
+                            scn.emit('screen-to-server', 'hellokey', 'hello from screen');
                         }
                     }
                     scn2.emit('register-screen', {room: '111'});
                 });
 
                 scn.on('server-to-screen', function(res) {
-                    if (res.payload == 'hello from screen') {
+                    if (res.key == 'hellokey' && res.payload == 'hello from screen') {
                         count--;
                         if (count == 0) done();
                     }
@@ -366,11 +367,11 @@ describe('una', function() {
         describe('screen', function() {
             it('should be able to send to server', function(done) {
                 var una = screenless_una();
-                una.screenless.onScreenInput = function(UnaServer, una_header, payload) {
+                una.screenless.registerOnScreenInput('hellokey', function(UnaServer, una_header, payload) {
                     if (payload == 'hello from screen') {
                         done();
                     }
-                }
+                });
                 una.listen();
 
                 var scn = new_socket(una.server)
@@ -378,7 +379,7 @@ describe('una', function() {
                 scn.on('screen-ready', function(res) {
                     if (res.success) {
                         if (res.state == "game_state") {
-                            scn.emit('screen-to-server', 'hello from screen');
+                            scn.emit('screen-to-server', 'hellokey', 'hello from screen');
                         }
                     }
                 });
@@ -388,20 +389,19 @@ describe('una', function() {
         describe('controller', function() {
             it('should be able to send to server', function(done) {
                 var una = screenless_una();
-                una.screenless.onControllerInput = function(UnaServer, una_header, payload) {
+                una.screenless.registerOnControllerInput('state_key', function(UnaServer, una_header, payload) {
                     if (payload == 'hello from controller') {
                         done();
                     }
-                }
+                });
                 una.listen();
 
                 var c1 = new_socket(una.server)
                 c1.emit('register-controller', {room: '123'});
                 c1.on('controller-ready', function(res) {
-                    console.log("controller ready");
                     if (res.success) {
                         if (res.state == "game_state") {
-                            c1.emit('controller-to-server', 'hello from controller');
+                            c1.emit('controller-to-server', 'state_key', 'hello from controller');
                         }
                     }
                 });
@@ -411,11 +411,11 @@ describe('una', function() {
         describe('interactions between screen and controller', function() {
             it('should work for one screen/controller', function(done) {
                 var una = screenless_una();
-                una.screenless.initState = function() {
+                una.screenless.registerInitState(function() {
                     return {team_a: 0, team_b: 0};
-                }
+                });
 
-                una.screenless.onControllerInput = function(UnaServer, una_header, payload) {
+                una.screenless.registerOnControllerInput('my_key', function(UnaServer, una_header, payload) {
                     var gameState = UnaServer.getState();
                     if (payload == 'team_a') {
                         gameState.team_a++;
@@ -423,8 +423,8 @@ describe('una', function() {
                     else if (payload == 'team_b') {
                         gameState.team_b++;
                     }
-                    UnaServer.sendToScreens(payload);
-                };
+                    UnaServer.sendToScreens('my_key', payload);
+                });
                 una.listen();
 
                 var scn = new_socket(una.server);
@@ -437,11 +437,11 @@ describe('una', function() {
                 });
 
                 c1.on('controller-ready', function(res) {
-                    c1.emit('controller-to-server', 'team_b');
+                    c1.emit('controller-to-server', 'my_key', 'team_b');
                 });
 
                 scn.on('server-to-screen', function(res) {
-                    if (res.payload == 'team_b') {
+                    if (res.key == 'my_key', res.payload == 'team_b') {
                         done();
                     }
                 });
@@ -449,11 +449,11 @@ describe('una', function() {
 
             it('should work for multiple screen', function(done) {
                 var una = screenless_una();
-                una.screenless.initState = function() {
+                una.screenless.registerInitState(function() {
                     return {team_a: 0, team_b: 0};
-                }
+                });
 
-                una.screenless.onControllerInput = function(UnaServer, una_header, payload) {
+                una.screenless.registerOnControllerInput('my_key', function(UnaServer, una_header, payload) {
                     var gameState = UnaServer.getState();
                     if (payload == 'team_a') {
                         gameState.team_a++;
@@ -461,8 +461,8 @@ describe('una', function() {
                     else if (payload == 'team_b') {
                         gameState.team_b++;
                     }
-                    UnaServer.sendToScreens(payload);
-                };
+                    UnaServer.sendToScreens('my_key', payload);
+                });
                 una.listen();
 
                 var scn = new_socket(una.server);
@@ -476,7 +476,7 @@ describe('una', function() {
                 });
 
                 c1.on('controller-ready', function(res) {
-                    c1.emit('controller-to-server', 'team_b');
+                    c1.emit('controller-to-server', 'my_key', 'team_b');
                 });
 
                 scn.on('server-to-screen', function(res) {
@@ -493,11 +493,11 @@ describe('una', function() {
 
             it('should work for multiple controllers', function(done) {
                 var una = screenless_una();
-                una.screenless.initState = function() {
+                una.screenless.registerInitState(function() {
                     return {team_a: 0, team_b: 0};
-                };
+                });
 
-                una.screenless.onControllerInput = function(UnaServer, una_header, payload) {
+                una.screenless.registerOnControllerInput('my_key', function(UnaServer, una_header, payload) {
                     var gameState = UnaServer.getState();
                     if (payload == 'team_a') {
                         gameState.team_a++;
@@ -505,12 +505,16 @@ describe('una', function() {
                     else if (payload == 'team_b') {
                         gameState.team_b++;
                     }
-                    UnaServer.sendToScreens(payload);
-                };
+                    UnaServer.sendToScreens('my_key', payload);
+                });
 
-                una.screenless.onScreenInput = function(UnaServer, una_header, payload) {
-                    UnaServer.sendToControllers(payload);
-                };
+                una.screenless.registerOnScreenInput('my_key', function(UnaServer, una_header, payload) {
+                    UnaServer.sendToControllers('my_key', payload);
+                });
+
+                una.screenless.registerOnScreenInput('end_key', function(UnaServer, una_header, payload) {
+                    UnaServer.sendToControllers('end_key', payload);
+                });
 
                 una.listen();
 
@@ -528,22 +532,22 @@ describe('una', function() {
                 });
 
                 c1.on('controller-ready', function(res) {
-                    c1.emit('controller-to-server', 'team_b');
+                    c1.emit('controller-to-server', 'my_key', 'team_b');
                 });
 
                 c2.on('controller-ready', function(res) {
-                    c2.emit('controller-to-server', 'team_b');
+                    c2.emit('controller-to-server', 'my_key', 'team_b');
                 });
 
                 scn.on('server-to-screen', function(res) {
                     server_count++;
                     if (server_count == 2) {
-                        scn.emit('screen-to-server', 'end');
+                        scn.emit('screen-to-server', 'end_key', 'end');
                     }
                 });
 
                 var ctrl_fn = function(res) {
-                    if (res.payload == 'end') {
+                    if (res.key == 'end_key' && res.payload == 'end') {
                         count++;
                         if (count == 2)
                             done();
