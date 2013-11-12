@@ -11,34 +11,67 @@ function randomString(len) {
 }
 
 var UnaController = (function() {
+    var registered = false;
+
+    var screen_callbacks = {};
+    var server_callbacks = {};
+
     var register = function(room_id, user_data, callback) {
+        if (registered) {
+            return;
+        }
+        registered = true;
+
         socket.emit('register-controller', {room: room_id, user_data: user_data});
 
         socket.on('controller-ready', function(data) {
             if (callback) {
                 callback(data);
             }
-        });
-    }
 
-    var onScreenInput = function(callback) {
+        });
+
         socket.on('screen-to-controller', function(data) {
-            callback(data);
+            if (data.key in screen_callbacks) {
+                for (var i=0;i<screen_callbacks[data.key].length;i++) {
+                    screen_callbacks[data.key][i](data);
+                }
+            }
         });
-    }
 
-    var sendToScreen = function(user_data) {
-        socket.emit('controller-to-screen', user_data);
-    }
-
-    var onServerInput = function(callback) {
         socket.on('server-to-controller', function(data) {
-            callback(data);
+            if (data.key in server_callbacks) {
+                for (var i=0;i<server_callbacks[data.key].length;i++) {
+                    server_callbacks[data.key][i](data);
+                }
+            }
         });
     }
 
-    var sendToServer = function(user_data) {
-        socket.emit('controller-to-server', user_data);
+    var onScreenInput = function(key, callback) {
+        if (key in screenCallbacks) {
+            screen_callbacks[key].push(callback);
+        }
+        else {
+            screen_callbacks[key] = [callback];
+        }
+    }
+
+    var sendToScreen = function(key, user_data) {
+        socket.emit('controller-to-screen', key, user_data);
+    }
+
+    var onServerInput = function(key, callback) {
+        if (key in server_callbacks) {
+            server_callbacks[key].push(callback);
+        }
+        else {
+            server_callbacks[key] = [callback];
+        }
+    }
+
+    var sendToServer = function(key, user_data) {
+        socket.emit('controller-to-server', key, user_data);
     }
 
 
@@ -53,8 +86,16 @@ var UnaScreen = (function() {
     var controllerList = [];
     var join_callback = function() {return true;}
     var leave_callback = function() {}
+    var controller_callbacks = {};
+    var server_callbacks = {};
 
+    var registered = false;
     var register = function(room_id, user_data, callback) {
+        if (registered) {
+            return;
+        }
+
+        registered = true;
         socket.emit('register-screen', {room: room_id, user_data: user_data});
 
         socket.on('screen-ready', function(data) {
@@ -74,6 +115,22 @@ var UnaScreen = (function() {
             controllerList.splice(index, 1);
             leave_callback(data);
         });
+
+        socket.on('controller-to-screen', function(data) {
+            if (data.key in controller_callbacks) {
+                for (var i=0;i<controller_callbacks[data.key][i].length;i++) {
+                    controller_callbacks[data.key][i](data);
+                }
+            }
+        });
+
+        socket.on('server-to-screen', function(data) {
+            if (data.key in server_callbacks) {
+                for (var i=0;i<server_callbacks[data.key][i].length;i++) {
+                    server_callbacks[data.key][i](data);
+                }
+            }
+        });
     }
 
     // This method should only be called once
@@ -86,27 +143,33 @@ var UnaScreen = (function() {
         leave_callback = callback;
     }
 
-    var onControllerInput = function(callback) {
-        socket.on('controller-to-screen', function(data) {
-            callback(data);
-        });
-    }
-
-    var sendToController = function(controller_id, user_data) {
-        // Check if the controller we are sending to exists
-        if (controllerList.indexOf(controller_id) > -1) {
-            socket.emit('screen-to-controller', controller_id, user_data);
+    var onControllerInput = function(key, callback) {
+        if (key in controller_callbacks) {
+            controller_callbacks[key].push(callback);
+        }
+        else {
+            controller_callbacks[key] = [callback];
         }
     }
 
-    var onServerInput = function(callback) {
-        socket.on('server-to-screen', function(data) {
-            callback(data);
-        });
+    var sendToController = function(controller_id, key, user_data) {
+        // Check if the controller we are sending to exists
+        if (controllerList.indexOf(controller_id) > -1) {
+            socket.emit('screen-to-controller', controller_id, key, user_data);
+        }
     }
 
-    var sendToServer = function(user_data) {
-        socket.emit('screen-to-server', user_data);
+    var onServerInput = function(key, callback) {
+        if (key in server_callbacks) {
+            server_callbacks[key].push(callback);
+        }
+        else {
+            server_callbacks[key] = [callback];
+        }
+    }
+
+    var sendToServer = function(key, user_data) {
+        socket.emit('screen-to-server', key, user_data);
     }
 
     return {register: register, 
