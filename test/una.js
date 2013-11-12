@@ -558,6 +558,51 @@ describe('una', function() {
                 c2.on('server-to-controller', ctrl_fn);
             });
         });
+    });
 
+    describe('flood control', function() {
+        it('should work', function(done) {
+            var una = screenless_una();
+            una.setConfig('floodControlDelay', 1000);
+
+            una.enableScreenless();
+            una.screenless.registerInitState(function() {
+                return 0;
+            });
+            una.screenless.registerOnControllerInput('flood', function(UnaServer, una_header, payload) {
+                var state = UnaServer.getState();
+                state += 1;
+                UnaServer.setState(state);
+            });
+            una.screenless.registerOnControllerInput('value', function(UnaServer, una_head, payload) {
+                UnaServer.sendToControllers('value', UnaServer.getState());
+            });
+
+            una.listen();
+
+            var scn = new_socket(una.server);
+            var c1 = new_socket(una.server);
+
+            scn.emit('register-screen', {room: '123'});
+            c1.emit('register-controller', {room: '123'});
+            c1.on('controller-ready', function(res) {
+                var flood = setInterval(function() {
+                    c1.emit('controller-to-server', 'flood');
+                }, 10);
+
+                setTimeout(function() {
+                    clearInterval(flood);
+                    c1.emit('controller-to-server', 'value');
+                },100);
+            });
+
+            c1.on('server-to-controller', function(res) {
+                if (res.key == 'value' && res.payload == 1) {
+                    done();
+                } else {
+                    throw "error: " + res.payload;
+                }
+            });
+        });
     });
 });
