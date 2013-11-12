@@ -118,7 +118,7 @@ var UnaScreen = (function() {
 
         socket.on('controller-to-screen', function(data) {
             if (data.key in controller_callbacks) {
-                for (var i=0;i<controller_callbacks[data.key][i].length;i++) {
+                for (var i=0;i<controller_callbacks[data.key].length;i++) {
                     controller_callbacks[data.key][i](data);
                 }
             }
@@ -126,7 +126,7 @@ var UnaScreen = (function() {
 
         socket.on('server-to-screen', function(data) {
             if (data.key in server_callbacks) {
-                for (var i=0;i<server_callbacks[data.key][i].length;i++) {
+                for (var i=0;i<server_callbacks[data.key].length;i++) {
                     server_callbacks[data.key][i](data);
                 }
             }
