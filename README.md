@@ -20,10 +20,10 @@ app.use(express.static(path.join(__dirname, 'public')));
 <script>
 UnaScreen.register('room1', 'screen');
 
-UnaScreen.onControllerInput(function (data) {
+UnaScreen.onControllerInput('controller_msg', function (data) {
     // controller1 says woof
     console.log(data.una.user_data + ' says ' + data.payload);
-    UnaScreen.sendToController(data.una.id, data.payload + ' you too!');
+    UnaScreen.sendToController(data.una.id, 'screen_msg', data.payload + ' you too!');
 });
 </script>
 ```
@@ -35,10 +35,10 @@ UnaScreen.onControllerInput(function (data) {
 
 <script>
 UnaController.register('room1', 'controller1', function(res) {
-    UnaController.sendToScreen('woof');
+    UnaController.sendToScreen('controller_msg', 'woof');
 });
 
-UnaController.onScreenInput(function (data) {
+UnaController.onScreenInput('screen_msg', function (data) {
     // screen says woof too
     console.log(data.una.user_data + ' says ' + data.payload);
 });
