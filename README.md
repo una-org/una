@@ -2,7 +2,9 @@
 
 [![Build Status](https://travis-ci.org/soedar/una.png)](https://travis-ci.org/soedar/una)
 
-## Server
+## Screen-Controller Mode
+
+### Server
 ```javascript
 var path = require('path');
 var una = require('una').listen(3216);
@@ -12,7 +14,7 @@ var app = una.app;
 app.use(express.static(path.join(__dirname, 'public')));
 ```
 
-## Screen
+### Screen
 ```html
 <script src='/socket.io/socket.io.js'></script>
 <script src='/una_js/una.js'></script>
@@ -28,7 +30,7 @@ UnaScreen.onControllerInput('controller_msg', function (data) {
 </script>
 ```
 
-## Controller
+### Controller
 ```html
 <script src='/socket.io/socket.io.js'></script>
 <script src='/una_js/una.js'></script>
@@ -45,6 +47,63 @@ UnaController.onScreenInput('screen_msg', function (data) {
 </script>
 ```
 
+## Screenless (Screen-Server-Controller) Mode
+
+### Server
+```javascript
+var una = require('una');
+
+// Enable screenless mode
+una.enableScreenless();
+
+una.screenless.registerInitState(function() {
+    return {count: 0}; 
+});
+
+una.screenless.registerOnControllerInput('add_count', function(UnaServer, una_header, payload) {
+    var state = UnaServer.getState();
+    state.count++;
+    UnaServer.sendToServers('increment_count'); 
+});
+
+una.listen(3216);
+```
+
+### Screen
+```html
+<script src='/socket.io/socket.io.js'></script>
+<script src='/una_js/una.js'></script>
+
+<script>
+var count = -1;
+UnaScreen.register('room1', 'screen', function(res) {
+    count = res.payload.count;
+    console.log('Current count :' + count);
+
+});
+
+UnaScreen.onServerInput('increment_count', function(res) {
+    count++;
+    console.log('Current count :' + count);
+});
+</script>
+```
+
+### Controller
+```html
+<script src='/socket.io/socket.io.js'></script>
+<script src='/una_js/una.js'></script>
+
+<script>
+var addCount = function() {
+    UnaController.sendToServer('add_count');
+}
+
+UnaController.register('room1', 'controller1', function(res) {
+    addCount();
+});
+</script>
+```
+
 ## Next Steps
-- Create a screenless mode, where a small game state is stored on the server, and the screen merely processes the change in the game state from the server/controller. (Means support for multiple screen woots)
 - More comprehensive test cases
