@@ -8,6 +8,42 @@ Used to start the Una instance. Una will attach the socket.io
 server to the server if it is passed in. If a port number is
 passed in, a HttpServer will be launched instead.
 
+### una.enableScreenless()
+
+Enable the screenless mode.
+
+### una.screenless.registerInitState(init_fn)
+
+When a screen or controller joins a new room, your init_fn will be called.
+Your init_fn should return the default state that the new room should have.
+
+### una.screenless.registerOnControllerEvent(key, callback)
+
+When a controller send a new payload keyed by key to the server, your callback
+will be called with the following parameters:
+- UnaServer: the UnaServer instance associated with the room
+- una_header: una_header associated with the controller that sent the payload
+- payload: The payload sent by the controller
+
+### una.screenless.registerOnScreenEvent(key, callback)
+
+When a screen send a new payload keyed by key to the server, your callback
+will be called with the following parameters:
+- UnaServer: the UnaServer instance associated with the room
+- una_header: una_header associated with the controller that sent the payload
+- payload: The payload sent by the controller
+
+### una.setConfig(config_key, config_value)
+
+Sets configuration key. The available keys are as follow:
+
+- floodControlDelay : delay in milliseconds  
+Discard subsequent messages that fall within miliseconds of the previous message.
+
+### una.screenless
+
+The screenless object. 
+
 ### una.app
 
 An express app instance attached to the Una instance.
@@ -20,6 +56,19 @@ The curently running server instance for the Una instance.
  
 A shortcut to the express library.
 
+## UnaServer
+
+### UnaServer.sendToControllers(key, payload)
+Sends payload of key to all controllers from the server.
+
+### UnaServer.sendToScreens(key, payload)
+Sends payload of key to all screens from the server.
+
+### UnaServer.getState()
+Returns the current room state associated with the UnaServer instance.
+
+### UnaServer.setState(new_state)
+Set the new state associated with the UnaServer instance.
 
 ## Screen
 
@@ -83,35 +132,29 @@ UnaScreen.onControllerLeave(function(data) {
 });
 ```
 
-### UnaScreen.onControllerInput(callback)
+### UnaScreen.onControllerInput(key, callback)
 
-Register the controller input event with your callback. When a controller
-sends a message to the screen, your callback will be called with an object
-containing the following keys:
+Register the controller input event associated with key with your callback. 
+When a controller sends a message to the screen, your callback will be called 
+with an object containing the following keys:
 - una: The una header
 - payload: The payload object that was sent by the controller
 
-### UnaScreen.sendToController(controller_id, payload)
+### UnaScreen.sendToController(controller_id, key, payload)
 
 Sends payload to the controller identified by controller_id. You may obtain
 the id of the controller by inspecting the una header of any controller event.
 
-### UnaScreen.setRoomData(key, value)
+### UnaScreen.onServerInput(key, callback)
 
-Stores the key-value pair in the room state on the server.
+Register the server input event identified with key with your callback, 
+in screenless mode. When a server sends a message to the screen, 
+your callback will be called with an object containing the following keys:
+- payload: The payload object that was sent by the server.
 
-### UnaScreen.getRoomData(key, callback)
+### UnaServer.sendToServer(key, payload)
 
-Retrieve the key-value pair in the room state on the server. When the data is
-ready, your callback function will be called with the following parameters:
-- key: The key that was requested
-- value: The value associated with the requested key
-
-```javascript
-UnaScreen.getRoomData("high_score", function(key, value) {
-    console.log("The highest score is " + value); 
-});
-```
+Sends payload to the server, with the key.
 
 ## Controller
 
@@ -140,17 +183,17 @@ UnaController.register('room1', ctrl_info, function(res) {
 });
 ```
 
-### UnaController.sendToScreen(payload)
+### UnaController.sendToScreen(key, payload)
 
 Sends payload to the screen. 
 
 ```javascript
 if (userIsShooting) {
-    UnaController.sendToScreen({'shoot': true});
+    UnaController.sendToScreen('shoot', true);
 }
 ```
 
-### UnaController.onScreenInput(callback)
+### UnaController.onScreenInput(key, callback)
 
 Register the screen input event with your callback. When a screen sends
 sends a message to this controller, your callback will be called with 
@@ -158,17 +201,16 @@ an object containing the following keys:
 - una: The una header
 - payload: The payload object that was sent by the screen
 
-### UnaController.setRoomData(key, value)
+### UnaController.onServerInput(key, callback)
 
-Stores the key-value pair in the room state on the server.
+Register the server input event identified with key with your callback, 
+in screenless mode. When a server sends a message to your controller, 
+your callback will be called with an object containing the following keys:
+- payload: The payload object that was sent by the server.
 
-### UnaController.getRoomData(key, callback)
+### UnaServer.sendToServer(key, payload)
 
-Retrieve the key-value pair in the room state on the server. When the data is
-ready, your callback function will be called with the following parameters:
-- key: The key that was requested
-- value: The value associated with the requested key
-
+Sends payload to the server, with key.
 
 ## Una Header
 The Una Header object consists of the following keys:
