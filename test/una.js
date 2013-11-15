@@ -17,7 +17,7 @@ var new_socket = function(server) {
     return ioc.connect(url, {'force new connection': true});
 }
 
-var screenless_una = function() {
+var server_mode_una = function() {
     var una = require('..');
     una.enableServerMode();
     una.server_mode.registerInitState("game_state");
@@ -287,14 +287,14 @@ describe('una', function() {
     describe('screenless mode', function() {
         describe('server initialization', function() {
                 it('should be possible', function(done) {
-                var una_server = screenless_una();
+                var una_server = server_mode_una();
                 done();
             });
         });
 
         describe('game state', function() {
             it('should be able to be set', function(done) {
-                var una = screenless_una();
+                var una = server_mode_una();
                 una.server_mode.registerInitState("abc");
                 una.server_mode.registerOnScreenInput('mykey', function(UnaServer, una_header, payload) {
                     UnaServer.setState(payload);
@@ -318,7 +318,7 @@ describe('una', function() {
             });
 
             it('should be tied to the same room', function(done) {
-                var una = screenless_una();
+                var una = server_mode_una();
                 una.server_mode.registerInitState("abc");
                 una.server_mode.registerOnScreenInput('hellokey', function(UnaServer, una_header, payload) {
                     UnaServer.setState(payload);
@@ -360,7 +360,7 @@ describe('una', function() {
 
         describe('screen', function() {
             it('should be able to send to server', function(done) {
-                var una = screenless_una();
+                var una = server_mode_una();
                 una.server_mode.registerOnScreenInput('hellokey', function(UnaServer, una_header, payload) {
                     if (payload == 'hello from screen') {
                         done();
@@ -382,7 +382,7 @@ describe('una', function() {
 
         describe('controller', function() {
             it('should be able to send to server', function(done) {
-                var una = screenless_una();
+                var una = server_mode_una();
                 una.server_mode.registerOnControllerInput('state_key', function(UnaServer, una_header, payload) {
                     if (payload == 'hello from controller') {
                         done();
@@ -404,7 +404,7 @@ describe('una', function() {
        
         describe('interactions between screen and controller', function() {
             it('should work for one screen/controller', function(done) {
-                var una = screenless_una();
+                var una = server_mode_una();
                 una.server_mode.registerInitState({team_a: 0, team_b: 0});
 
                 una.server_mode.registerOnControllerInput('my_key', function(UnaServer, una_header, payload) {
@@ -440,7 +440,7 @@ describe('una', function() {
             });
 
             it('should work for multiple screen', function(done) {
-                var una = screenless_una();
+                var una = server_mode_una();
                 una.server_mode.registerInitState({team_a: 0, team_b: 0});
 
                 una.server_mode.registerOnControllerInput('my_key', function(UnaServer, una_header, payload) {
@@ -482,7 +482,7 @@ describe('una', function() {
             });
 
             it('should work for multiple controllers', function(done) {
-                var una = screenless_una();
+                var una = server_mode_una();
                 una.server_mode.registerInitState({team_a: 0, team_b: 0});
 
                 una.server_mode.registerOnControllerInput('my_key', function(UnaServer, una_header, payload) {
@@ -550,7 +550,7 @@ describe('una', function() {
 
     describe('flood control', function() {
         it('should work', function(done) {
-            var una = screenless_una();
+            var una = server_mode_una();
             una.set('floodControlDelay', 1000);
 
             una.enableServerMode();
