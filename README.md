@@ -20,11 +20,11 @@ app.use(express.static(path.join(__dirname, 'public')));
 <script src='/una_js/una.js'></script>
 
 <script>
-UnaScreen.register('room1', 'screen');
+UnaScreen.register('room1', {name: 'screen'});
 
 UnaScreen.onControllerInput('controller_msg', function (data) {
     // controller1 says woof
-    console.log(data.una.user_data + ' says ' + data.payload);
+    console.log(data.una.user_data.name + ' says ' + data.payload);
     UnaScreen.sendToController(data.una.id, 'screen_msg', data.payload + ' you too!');
 });
 </script>
@@ -36,13 +36,13 @@ UnaScreen.onControllerInput('controller_msg', function (data) {
 <script src='/una_js/una.js'></script>
 
 <script>
-UnaController.register('room1', 'controller1', function(res) {
+UnaController.register('room1', {name: 'controller1'}, function(res) {
     UnaController.sendToScreen('controller_msg', 'woof');
 });
 
 UnaController.onScreenInput('screen_msg', function (data) {
     // screen says woof too
-    console.log(data.una.user_data + ' says ' + data.payload);
+    console.log(data.una.user_data.name + ' says ' + data.payload);
 });
 </script>
 ```
@@ -56,9 +56,7 @@ var una = require('una');
 // Enable screenless mode
 una.enableScreenless();
 
-una.screenless.registerInitState(function() {
-    return {count: 0}; 
-});
+una.screenless.registerInitState({count: 0});
 
 una.screenless.registerOnControllerInput('add_count', function(UnaServer, una_header, payload) {
     var state = UnaServer.getState();
@@ -76,7 +74,7 @@ una.listen(3216);
 
 <script>
 var count = -1;
-UnaScreen.register('room1', 'screen', function(res) {
+UnaScreen.register('room1', {name: 'screen'}, function(res) {
     count = res.payload.count;
     console.log('Current count :' + count);
 
@@ -99,7 +97,7 @@ var addCount = function() {
     UnaController.sendToServer('add_count');
 }
 
-UnaController.register('room1', 'controller1', function(res) {
+UnaController.register('room1', {name: 'controller1'}, function(res) {
     addCount();
 });
 </script>
