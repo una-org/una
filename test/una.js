@@ -19,10 +19,8 @@ var new_socket = function(server) {
 
 var screenless_una = function() {
     var una = require('..');
-    una.enableScreenless();
-    una.screenless.registerInitState(function() {
-        return "game_state";
-    });
+    una.enableServerMode();
+    una.server_mode.registerInitState("game_state");
     return una;
 }
 
@@ -38,7 +36,7 @@ describe('una', function() {
     describe('server', function() {
         it('should be able to listen on port number', function(done) {
             var una = require('..').listen();
-            request(una.server).get('/una_js/una.js').expect(200, done);
+            request(una.http_server).get('/una_js/una.js').expect(200, done);
         });
     })
 
@@ -297,16 +295,14 @@ describe('una', function() {
         describe('game state', function() {
             it('should be able to be set', function(done) {
                 var una = screenless_una();
-                una.screenless.registerInitState(function() {
-                    return "abc";
-                });
-                una.screenless.registerOnScreenInput('mykey', function(UnaServer, una_header, payload) {
+                una.server_mode.registerInitState("abc");
+                una.server_mode.registerOnScreenInput('mykey', function(UnaServer, una_header, payload) {
                     UnaServer.setState(payload);
                     UnaServer.sendToScreens('mykey2', UnaServer.getState());
                 });
                 una.listen();
 
-                var scn = new_socket(una.server);
+                var scn = new_socket(una.http_server);
                 scn.emit('register-screen', {room: '123'});
                 scn.on('screen-ready', function(res) {
                     if (res.state == "abc") {
@@ -323,17 +319,15 @@ describe('una', function() {
 
             it('should be tied to the same room', function(done) {
                 var una = screenless_una();
-                una.screenless.registerInitState(function() {
-                    return "abc";
-                });
-                una.screenless.registerOnScreenInput('hellokey', function(UnaServer, una_header, payload) {
+                una.server_mode.registerInitState("abc");
+                una.server_mode.registerOnScreenInput('hellokey', function(UnaServer, una_header, payload) {
                     UnaServer.setState(payload);
                     UnaServer.sendToScreens('hellokey', UnaServer.getState());
                 });
                 una.listen();
 
-                var scn = new_socket(una.server)
-                var scn2 = new_socket(una.server)
+                var scn = new_socket(una.http_server)
+                var scn2 = new_socket(una.http_server)
                 scn.emit('register-screen', {room: '123'});
 
                 var count = 2;
@@ -367,14 +361,14 @@ describe('una', function() {
         describe('screen', function() {
             it('should be able to send to server', function(done) {
                 var una = screenless_una();
-                una.screenless.registerOnScreenInput('hellokey', function(UnaServer, una_header, payload) {
+                una.server_mode.registerOnScreenInput('hellokey', function(UnaServer, una_header, payload) {
                     if (payload == 'hello from screen') {
                         done();
                     }
                 });
                 una.listen();
 
-                var scn = new_socket(una.server)
+                var scn = new_socket(una.http_server)
                 scn.emit('register-screen', {room: '123'});
                 scn.on('screen-ready', function(res) {
                     if (res.success) {
@@ -389,14 +383,14 @@ describe('una', function() {
         describe('controller', function() {
             it('should be able to send to server', function(done) {
                 var una = screenless_una();
-                una.screenless.registerOnControllerInput('state_key', function(UnaServer, una_header, payload) {
+                una.server_mode.registerOnControllerInput('state_key', function(UnaServer, una_header, payload) {
                     if (payload == 'hello from controller') {
                         done();
                     }
                 });
                 una.listen();
 
-                var c1 = new_socket(una.server)
+                var c1 = new_socket(una.http_server)
                 c1.emit('register-controller', {room: '123'});
                 c1.on('controller-ready', function(res) {
                     if (res.success) {
@@ -411,11 +405,9 @@ describe('una', function() {
         describe('interactions between screen and controller', function() {
             it('should work for one screen/controller', function(done) {
                 var una = screenless_una();
-                una.screenless.registerInitState(function() {
-                    return {team_a: 0, team_b: 0};
-                });
+                una.server_mode.registerInitState({team_a: 0, team_b: 0});
 
-                una.screenless.registerOnControllerInput('my_key', function(UnaServer, una_header, payload) {
+                una.server_mode.registerOnControllerInput('my_key', function(UnaServer, una_header, payload) {
                     var gameState = UnaServer.getState();
                     if (payload == 'team_a') {
                         gameState.team_a++;
@@ -427,8 +419,8 @@ describe('una', function() {
                 });
                 una.listen();
 
-                var scn = new_socket(una.server);
-                var c1 = new_socket(una.server);
+                var scn = new_socket(una.http_server);
+                var c1 = new_socket(una.http_server);
 
                 scn.emit('register-screen', {room: '123'});
 
@@ -449,11 +441,9 @@ describe('una', function() {
 
             it('should work for multiple screen', function(done) {
                 var una = screenless_una();
-                una.screenless.registerInitState(function() {
-                    return {team_a: 0, team_b: 0};
-                });
+                una.server_mode.registerInitState({team_a: 0, team_b: 0});
 
-                una.screenless.registerOnControllerInput('my_key', function(UnaServer, una_header, payload) {
+                una.server_mode.registerOnControllerInput('my_key', function(UnaServer, una_header, payload) {
                     var gameState = UnaServer.getState();
                     if (payload == 'team_a') {
                         gameState.team_a++;
@@ -465,9 +455,9 @@ describe('una', function() {
                 });
                 una.listen();
 
-                var scn = new_socket(una.server);
-                var scn2 = new_socket(una.server);
-                var c1 = new_socket(una.server);
+                var scn = new_socket(una.http_server);
+                var scn2 = new_socket(una.http_server);
+                var c1 = new_socket(una.http_server);
 
                 scn.emit('register-screen', {room: '123'});
 
@@ -493,11 +483,9 @@ describe('una', function() {
 
             it('should work for multiple controllers', function(done) {
                 var una = screenless_una();
-                una.screenless.registerInitState(function() {
-                    return {team_a: 0, team_b: 0};
-                });
+                una.server_mode.registerInitState({team_a: 0, team_b: 0});
 
-                una.screenless.registerOnControllerInput('my_key', function(UnaServer, una_header, payload) {
+                una.server_mode.registerOnControllerInput('my_key', function(UnaServer, una_header, payload) {
                     var gameState = UnaServer.getState();
                     if (payload == 'team_a') {
                         gameState.team_a++;
@@ -508,19 +496,19 @@ describe('una', function() {
                     UnaServer.sendToScreens('my_key', payload);
                 });
 
-                una.screenless.registerOnScreenInput('my_key', function(UnaServer, una_header, payload) {
+                una.server_mode.registerOnScreenInput('my_key', function(UnaServer, una_header, payload) {
                     UnaServer.sendToControllers('my_key', payload);
                 });
 
-                una.screenless.registerOnScreenInput('end_key', function(UnaServer, una_header, payload) {
+                una.server_mode.registerOnScreenInput('end_key', function(UnaServer, una_header, payload) {
                     UnaServer.sendToControllers('end_key', payload);
                 });
 
                 una.listen();
 
-                var scn = new_socket(una.server);
-                var c1 = new_socket(una.server);
-                var c2 = new_socket(una.server);
+                var scn = new_socket(una.http_server);
+                var c1 = new_socket(una.http_server);
+                var c2 = new_socket(una.http_server);
                 var server_count = 0;
                 var count = 0;
 
@@ -563,25 +551,23 @@ describe('una', function() {
     describe('flood control', function() {
         it('should work', function(done) {
             var una = screenless_una();
-            una.setConfig('floodControlDelay', 1000);
+            una.set('floodControlDelay', 1000);
 
-            una.enableScreenless();
-            una.screenless.registerInitState(function() {
-                return 0;
-            });
-            una.screenless.registerOnControllerInput('flood', function(UnaServer, una_header, payload) {
+            una.enableServerMode();
+            una.server_mode.registerInitState(0);
+            una.server_mode.registerOnControllerInput('flood', function(UnaServer, una_header, payload) {
                 var state = UnaServer.getState();
                 state += 1;
                 UnaServer.setState(state);
             });
-            una.screenless.registerOnControllerInput('value', function(UnaServer, una_head, payload) {
+            una.server_mode.registerOnControllerInput('value', function(UnaServer, una_head, payload) {
                 UnaServer.sendToControllers('value', UnaServer.getState());
             });
 
             una.listen();
 
-            var scn = new_socket(una.server);
-            var c1 = new_socket(una.server);
+            var scn = new_socket(una.http_server);
+            var c1 = new_socket(una.http_server);
 
             scn.emit('register-screen', {room: '123'});
             c1.emit('register-controller', {room: '123'});
