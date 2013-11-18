@@ -1,0 +1,196 @@
+#Quick Start
+
+## Technological Overview
+
+In Una, a Screen refers to the client that is performing the main processing,
+after receiving inputs from one or many Controllers. The Una Server acts as a
+relay between the Screen and the Controller, relaying messages between them. By
+doing so, we can keep the Server foot print small with minimial processing, 
+(as all we are doing is relaying messages between the Screen and Controller).
+
+The Screen and the Client are client side JavaScript code, and are connected
+to the Server via websockets through socket.io. The Una Server is written
+in node.js.
+
+Una makes it easy for you to write client-to-client code that is supported
+via websockets, leaving you needing to write little if any server side code.
+
+## Una Server Installation
+As Una is a node.js library, you will need to have node.js installed on your
+server in order to use it. Follow one of the instructions below to install
+node.js on your platform of choice.
+
+Una is available as a package in npm. To install Una to your project, simply
+type the following in your shell:
+```shell
+npm install una
+```
+
+And you are done!
+
+## The Una Server
+
+### Installing
+After installing Una, create an app.js file, which would be the starting point of
+your node.js application. Type the following code:
+
+```javascript
+una = require('una')
+
+una.listen(3216);
+```
+
+Run your node.js application in shell with:
+```shell
+$ node app.js
+   info - socket.io started
+```
+
+Note: Una is built on top of express and socket.io, and as such, 
+these dependencies are automatically installed when you installed Una.
+
+una.listen takes in a port number, and creates a HttpServer listening at that
+port number, running the express framework. In addition, it also launches the
+socket.io client listening at the same port. To gain access to the express app
+object and the socket.io io object, use the following commands:
+
+```javascript
+// express app instance:
+var app = una.app;
+
+// socket.io io instance
+var io = una.io;
+
+// expres library:
+var express = una.express;
+```
+
+### Serving static HTML files
+
+We want a way to serve static HTML files using the express framework. Modify app.js to the following
+```javascript
+path = require('path');
+una = require('una');
+
+var app = una.app;
+var express = una.express;
+
+// Configure express to use the /public folder to serve static files
+app.use(express.static(path.join(__dirname, 'public'));
+
+una.listen(3216);
+```
+
+This will configue express to serve static files at the /public directory.
+Since Una is a wrapper around express and socket.io, you may use the express
+client to serve other routes that your application needs.
+
+## Una Screen and Controller
+
+### Room
+Una has the concept of a room, which can be thought of as a grouping of
+Screen and Controllers. Screen and Controllers can only communicate to each
+other if they are in the same room. You can think of a room as an instance
+of a game, where there is one Screen which shows the game state of that room,
+and multiple controllers which would be changing the state of the game by
+sending messages to the Screen.
+
+Note that in relay mode, there can only be one Screen active at any time
+for each room. All the controllers in that room 
+
+### Installation
+
+For your client side Una code, you would need to include the following 
+javascript file in your HTML code:
+
+```html
+<script src='/socket.io/socket.io.js'></script>
+<script src='/una_js/una.js'></script>
+```
+
+### Registration
+
+You will need to identify whether the page is to be used as a Screen or as
+a Controller, by calling the registration method. 
+
+**Screen**
+```javascript
+var room_id = 'room1';
+var screen_data = {name: 'screen'};
+UnaScreen.register(room_id, screen_data, function(res) {
+    if (res.success) {
+        // Screen registered successfully
+    }
+    else {
+        // Screen registration failed
+    }
+});
+```
+
+**Controller**
+```javascript
+var room_id = 'room1';
+var controller_data = {name: 'player1'};
+UnaController.register(room_id, screen_data, function(res) {
+    if (res.success) {
+        // Controller registered successfully
+    }
+    else {
+        // Controller registration failed
+    }
+});
+```
+
+The first parameter of the register method is the room id that the current
+page should join. The second parameter is the user data, and it can contain
+any Javascript object that will be used to identify this particular object.
+All subsequent messages sent from the page will include this user data object,
+for the receiver to identify the origin of the messages.
+
+### Receiving Data
+
+To listen for a data, use the following onInput methods:
+
+**Controller**
+```javascript
+UnaController.onScreenInput('key', function(res) {
+    // res.una: Una header
+    // res.una.user_data: The user data of the Screen sender
+    // res.una.id: Unique id of the sender
+    // res.payload: Payload that was sent by the screen
+});
+```
+
+**Screen**
+```javascript
+UnaScreen.onControllerInput('key', function(res) {
+    // res.una: Una header
+    // res.una.user_data: The user data of the Controller sender
+    // res.una.id: Unique id of the sender
+    // res.payload: Payload that was sent by the screen
+});
+```
+
+res.una is the Una Header attached to every message, and contains the 
+user_data that was supplied when the Screen/Controller was registered,
+and the id, a unique id identifying the client.
+
+### Sending Data
+
+To send a data, use the following sendTo methods:
+
+**Controller**
+```javascript
+UnaController.sendToScreen('key', {data: 'data'})
+```
+The first parameter of the sendToScreen method is the key to send the data to,
+and the second parameter is the Javascript object of the data to send to the
+screen.
+
+**Screen**
+```javascript
+UnaScreen.sendToController(controller_id, 'key', {data: 'data'})
+```
+The Screen can also send data to a particular controller. The controller_id can
+be obtained from the res.una.id of the controller when it was first registered,
+or after a onControllerInput event.
