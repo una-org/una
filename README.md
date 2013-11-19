@@ -54,11 +54,11 @@ UnaController.onScreenInput('screen_msg', function (data) {
 var una = require('una');
 
 // Enable screenless mode
-una.enableScreenless();
+una.enableServerMode();
 
-una.screenless.registerInitState({count: 0});
+una.server_mode.registerInitState({count: 0});
 
-una.screenless.registerOnControllerInput('add_count', function(UnaServer, una_header, payload) {
+una.server_mode.registerOnControllerInput('add_count', function(UnaServer, una_header, payload) {
     var state = UnaServer.getState();
     state.count++;
     UnaServer.sendToServers('increment_count'); 
