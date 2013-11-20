@@ -1,27 +1,30 @@
-#Quick Start
+Quick Start
+==
 
 ## Technological Overview
 
-In Una, a **Screen** refers to the desktop client that is performing the main processing,
-after receiving inputs from one or many **Controllers**. The Una Server acts as a
-relay between the Screen and the Controller, relaying messages between them. By
-doing so, we can keep the Server footprint small with minimal processing, 
-(as all we are doing is relaying messages between the Screen and Controller).
+In Una, there are two kinds of clients:
+- **Screen**: The centralized display that performs the bulk of the processing, usually accessed via a browser on a desktop/laptop.
+- **Controller**: The medium for user input, usually accessed via a browser on a mobile device. 
 
-The Screen and the Controller comprises of client side JavaScript code, and are connected
-to the Server via websockets through socket.io. The Una Server is written
-in node.js.
+The Una Server acts as a relay between the Screen and the Controller(s), passing messages between them. By
+doing so, we can keep the Server footprint small with minimal processing, (as all we are doing is relaying messages between the Screen and Controller).
+
+Both the Screen and the Controller comprises of client-side JavaScript code, and are connected
+to the Server via websockets through socket.io. The Una Server is written in node.js.
 
 Una makes it easy for you to write client-to-client code that is supported
-via websockets, leaving you needing to write little if any server side code.
+via websockets, having you to write little, if any, server-side code.
 
 ## Una Server Installation
+
 As Una is a node.js library, you will need to have node.js installed on your
-server in order to use it. Follow one of the instructions below to install
+server in order to use it. Follow the instructions below to install
 node.js on your platform of choice.
 
 Una is available as a package in npm. To install Una to your project, simply
-type the following in your shell:
+type the following in shell:
+
 ```shell
 npm install una
 ```
@@ -31,7 +34,7 @@ And you are done!
 ## The Una Server
 
 ### Installing
-After installing Una, create an app.js file, which would be the starting point of
+After installing Una, create an `app.js` file, which would be the starting point of
 your node.js application. Type the following code:
 
 ```javascript
@@ -47,13 +50,12 @@ $ node app.js
    Una server listening on port 3216
 ```
 
-Note: Una is built on top of express and socket.io, and as such, 
-these dependencies are automatically installed when you install Una.
+Note: Una is built on top of express and socket.io, hence, these dependencies are automatically installed when you install Una.
 
 `una.listen` takes in a port number, and creates a HttpServer listening on that
 port number, running the express framework. In addition, it also launches the
 socket.io client listening on the same port. To gain access to the express app
-object and the socket.io io object, use the following commands:
+object and the socket.io io object, use the following code:
 
 ```javascript
 // express app instance:
@@ -66,7 +68,7 @@ var io = una.io;
 var express = una.express;
 ```
 
-### Serving static HTML files
+### Serving Static HTML Files
 
 We want a way to serve static HTML files using the express framework. Modify `app.js` to the following:
 ```javascript
@@ -82,22 +84,22 @@ app.use(express.static(path.join(__dirname, 'public'));
 una.listen(3216);
 ```
 
-This will configue express to serve static files in the `/public` directory.
+This will configure express to serve static files from the `/public` directory.
 Since Una is a wrapper around express and socket.io, you may use the express
 client to serve other routes that your application needs.
 
 ## Una Screen and Controller
 
 ### Room
-In Una, rooms are thought of as collections of
-Screen and Controllers. The Screen and Controllers can only communicate with each
+
+In Una, rooms are thought of as collections of Screen and Controllers. The Screen and Controllers can only communicate with each
 other if they are in the same room. You can think of a room as an instance
-of a game, where there is one Screen which shows the game state of that room,
-and controllers which would be changing the state of the game by
+of a game, where there is one Screen which shows the state of that room,
+and controllers which would be changing the state of the room by
 sending messages to the Screen.
 
-Note that in relay mode, there can only be one Screen active at any time
-for each room. All the controllers in that room 
+Note that in relay mode, there can only be **one** Screen active at any time
+for each room. All the controllers in that room TODO
 
 ### Installation
 
@@ -115,83 +117,90 @@ You will need to identify whether the page is to be used as a Screen or as
 a Controller, by calling the registration method. 
 
 **Screen**
+
 ```javascript
 var room_id = 'room1';
 var screen_data = {name: 'screen'};
 UnaScreen.register(room_id, screen_data, function(res) {
     if (res.success) {
         // Screen registered successfully
-    }
-    else {
+    } else {
         // Screen registration failed
     }
 });
 ```
 
 **Controller**
+
 ```javascript
 var room_id = 'room1';
 var controller_data = {name: 'player1'};
-UnaController.register(room_id, screen_data, function(res) {
+UnaController.register(room_id, controller_data, function(res) {
     if (res.success) {
         // Controller registered successfully
-    }
-    else {
+    } else {
         // Controller registration failed
     }
 });
 ```
 
-The first parameter of the register method is the room id that the current
-page should join. The second parameter is the user data, and it can contain
-any Javascript object that will be used to identify this particular object.
-All subsequent messages sent from the page will include this user data object,
-for the receiver to identify the origin of the messages.
+The first parameter of the register method is the room id, a unique string that identifies the room. 
+The second parameter is the client data, and it can contain any Javascript object that will be used to identify this particular client.
+All subsequent messages sent from the page will include this client data object for the receiver to identify the origin of the messages.
 
-### Receiving Data
-
-To listen for a data, use the following onInput methods:
-
-**Controller**
-```javascript
-UnaController.onScreenInput('key', function(res) {
-    // res.una: Una header
-    // res.una.user_data: The user data of the Screen sender
-    // res.una.id: Unique id of the sender
-    // res.payload: Payload that was sent by the screen
-});
-```
-
-**Screen**
-```javascript
-UnaScreen.onControllerInput('key', function(res) {
-    // res.una: Una header
-    // res.una.user_data: The user data of the Controller sender
-    // res.una.id: Unique id of the sender
-    // res.payload: Payload that was sent by the screen
-});
-```
-
-res.una is the Una Header attached to every message, and contains the 
-user_data that was supplied when the Screen/Controller was registered,
-and the id, a unique id identifying the client.
 
 ### Sending Data
 
-To send a data, use the following sendTo methods:
+To send data, use the following `sendTo` methods:
 
 **Controller**
+
 ```javascript
-UnaController.sendToScreen('key', {data: 'data'})
+UnaController.sendToScreen(<type_of_event>, { data: 'data' });
 ```
-The first parameter of the sendToScreen method is the key to send the data to,
-and the second parameter is the Javascript object of the data to send to the
-screen.
+
+`<type_of_event>` is a string, which the Screen will use to identify the type of `sendTo` event,
+and the second parameter is a JavaScript object of the data to send to the screen.
 
 **Screen**
+
 ```javascript
-UnaScreen.sendToController(controller_id, 'key', {data: 'data'})
+UnaScreen.sendToController(<controller_id>, <type_of_event>, {data: 'data'})
 ```
-The Screen can also send data to a particular controller. The controller_id can
-be obtained from the res.una.id of the controller when it was first registered,
-or after a onControllerInput event.
+
+The Screen can also send data to a particular controller. The `<controller_id>` can
+be obtained from `res.una.id` of the controller when it was first registered,
+or after an `onControllerInput` event.
+
+### Receiving Data
+
+To listen for data, use the following `onInput` methods:
+
+**Controller**
+
+```javascript
+UnaController.onScreenInput(<type_of_event>, function(res) {
+    // <type_of_event>: This string should correspond to the string passed in to the `sendToController` function from the Screen
+    // res.una: Una header
+    // res.una.user_data: The user data of the Screen sender
+    // res.una.id: Unique id of the sender
+    // res.payload: Payload object that was sent by the screen
+});
+```
+
+**Screen**
+
+```javascript
+UnaScreen.onControllerInput(<type_of_event>, function(res) {
+    // <type_of_event>: This string should correspond to the string passed in to the `sendToScreen` function from the Controller
+    // res.una: Una header
+    // res.una.user_data: The user data of the Controller sender
+    // res.una.id: Unique id of the sender
+    // res.payload: Payload object that was sent by the controller
+});
+```
+
+`res.una` is the Una Header attached to every message, and contains:
+- `user_data` that was supplied when the Screen/Controller was registered
+- `id`, a unique id identifying the client
+
