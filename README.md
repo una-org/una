@@ -1,107 +1,22 @@
-# Una: 
+Una
+==
 
-[![Build Status](https://travis-ci.org/soedar/una.png)](https://travis-ci.org/soedar/una)
+Una is a free and open source Javascript library that allows developers to create interactive applications where multiple users can interact with large central displays in real-time using mobile devices.
 
-## Screen-Controller Mode
+Authors
+-- 
 
-### Server
-```javascript
-var path = require('path');
-var una = require('una').listen(3216);
-var express = una.express;
-var app = una.app;
+- Soedarsono ([https://www.github.com/soedar](https://www.github.com/soedar))  
+- Tay Yang Shun ([https://www.github.com/yangshun](https://www.github.com/yangshun))
+- Le Viet Tien ([https://www.github.com/lvtiendev](https://www.github.com/lvtiendev))
+- Soon Chun Mun ([https://www.github.com/chunmun](https://www.github.com/chunmun))
 
-app.use(express.static(path.join(__dirname, 'public')));
-```
+License
+--
+Copyright (c) Corspedia 2013. Licensed under the MIT license.
 
-### Screen
-```html
-<script src='/socket.io/socket.io.js'></script>
-<script src='/una_js/una.js'></script>
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
 
-<script>
-UnaScreen.register('room1', {name: 'screen'});
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
-UnaScreen.onControllerInput('controller_msg', function (data) {
-    // controller1 says woof
-    console.log(data.una.user_data.name + ' says ' + data.payload);
-    UnaScreen.sendToController(data.una.id, 'screen_msg', data.payload + ' you too!');
-});
-</script>
-```
-
-### Controller
-```html
-<script src='/socket.io/socket.io.js'></script>
-<script src='/una_js/una.js'></script>
-
-<script>
-UnaController.register('room1', {name: 'controller1'}, function(res) {
-    UnaController.sendToScreen('controller_msg', 'woof');
-});
-
-UnaController.onScreenInput('screen_msg', function (data) {
-    // screen says woof too
-    console.log(data.una.user_data.name + ' says ' + data.payload);
-});
-</script>
-```
-
-## Screenless (Screen-Server-Controller) Mode
-
-### Server
-```javascript
-var una = require('una');
-
-// Enable screenless mode
-una.enableServerMode();
-
-una.server_mode.registerInitState({count: 0});
-
-una.server_mode.registerOnControllerInput('add_count', function(UnaServer, una_header, payload) {
-    var state = UnaServer.getState();
-    state.count++;
-    UnaServer.sendToServers('increment_count'); 
-});
-
-una.listen(3216);
-```
-
-### Screen
-```html
-<script src='/socket.io/socket.io.js'></script>
-<script src='/una_js/una.js'></script>
-
-<script>
-var count = -1;
-UnaScreen.register('room1', {name: 'screen'}, function(res) {
-    count = res.payload.count;
-    console.log('Current count :' + count);
-
-});
-
-UnaScreen.onServerInput('increment_count', function(res) {
-    count++;
-    console.log('Current count :' + count);
-});
-</script>
-```
-
-### Controller
-```html
-<script src='/socket.io/socket.io.js'></script>
-<script src='/una_js/una.js'></script>
-
-<script>
-var addCount = function() {
-    UnaController.sendToServer('add_count');
-}
-
-UnaController.register('room1', {name: 'controller1'}, function(res) {
-    addCount();
-});
-</script>
-```
-
-## Next Steps
-- More comprehensive test cases
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
