@@ -22,13 +22,13 @@ una.enableServerMode()
 una.server_mode.registerInitState({tomato: 0, potato: 0});
 ```
 
-### una.server_mode.registerOnControllerEvent(key, callback)
+### una.server_mode.registerOnControllerEvent(event_key, callback)
 
-When a controller send a new payload keyed by key to the server, your callback
+When a controller sends a new payload keyed by `event_key` to the server, your callback
 will be called with the following parameters:
-- UnaServer: the UnaServer instance associated with the room
-- una_header: una_header associated with the controller that sent the payload
-- payload: The payload sent by the controller
+- **UnaServer**: the UnaServer instance associated with the room
+- **una_header**: una_header associated with the controller that sent the payload
+- **payload**: The payload sent by the controller
 
 ```javascript
 una.server_mode.registerOnControllerEvent('vote', function(UnaServer, una_header, payload) {
@@ -44,9 +44,9 @@ una.server_mode.registerOnControllerEvent('vote', function(UnaServer, una_header
 
 When a screen send a new payload keyed by key to the server, your callback
 will be called with the following parameters:
-- UnaServer: the UnaServer instance associated with the room
-- una_header: una_header associated with the controller that sent the payload
-- payload: The payload sent by the controller
+- **UnaServer**: the UnaServer instance associated with the room
+- **una_header**: una_header associated with the controller that sent the payload
+- **payload**: The payload sent by the controller
 
 ```javascript
 una.server_mode.registerOnScreenEvent('reset', function(UnaServer, una_header, payload) {
@@ -58,10 +58,10 @@ una.server_mode.registerOnScreenEvent('reset', function(UnaServer, una_header, p
 
 ### una.set(config_key, config_value)
 
-Sets configuration key. The available keys are as follow:
+Sets configuration key. The available keys are as follows:
 
-- floodControlDelay : delay in milliseconds  
-Discard subsequent messages that fall within miliseconds of the previous message. 
+- **floodControlDelay**: delay in milliseconds  
+Discard subsequent messages that fall within milliseconds of the previous message. 
 
 ### una.app
 
@@ -69,7 +69,7 @@ An express app instance attached to the Una instance.
 
 ### una.httpServer
 
-The curently running http server instance for the Una instance.
+The currently running http server instance for the Una instance.
 
 ### una.express
  
@@ -77,16 +77,16 @@ A shortcut to the express library.
 
 ## UnaServer
 
-### UnaServer.sendToControllers(key, payload)
-Sends payload of key to all controllers from the server.
+### UnaServer.sendToControllers(event_key, payload)
+Sends payload of event_key to all controllers from the server.
 ```javascript
 UnaScreen.sendToControllers('game_end', {winner: 'tomato'});
 ```
 
-### UnaServer.sendToScreens(key, payload)
-Sends payload of key to all screens from the server.
+### UnaServer.sendToScreens(event_key, payload)
+Sends payload of event_key to all screens from the server.
 ```javascript
-UnaScreen.sendToControllers('clear_screen', null);
+UnaScreen.sendToScreens('clear_screen', null);
 ```
 
 ### UnaServer.getState()
@@ -104,14 +104,14 @@ supply the user_data, an object that could be used to identify
 this particular screen instance, and it will be stored in the
 una header.
 
-Your user_data should be a JSON object identifying the screen instance.
+Your user_data should be a JavaScript object identifying the screen instance.
 
 When the registration has been complete, your callback function will
 be called with an object with the following keys:
-- success: Whether the screen has registered successfully
-- (in server mode) state: The current state of the room at the moment
+- **success**: Whether the screen has registered successfully
+- (in server mode) **state**: The current state of the room at the moment
 the screen joins.
-- (optional) error: The error message if the registration has 
+- (optional) **error**: The error message if the registration has 
 failed.
 
 ```javascript
@@ -127,9 +127,9 @@ UnaScreen.register('room1', {name: 'screen'}, function(res) {
 Register the controller join event with your callback. When a new
 controller has joined the Screen, your callback function will be 
 called with an object containing the following keys:
-- una: The una header
+- **una**: The una header
 
-Your callback should return true if you wish to accept the controller.
+Your callback should return `true` if you wish to accept the controller.
 This allows you to limit the number of controllers that your screen can
 handle at any time.
 
@@ -151,7 +151,7 @@ UnaScreen.onControllerJoin(function(data) {
 Register the controller leave event with your callback. When a new
 controller has joined the Screen, your callback function will be 
 called with an object containing the following keys:
-- una: The una header
+- **una**: The una header
 
 ```javascript
 var player_ids = [];
@@ -166,8 +166,8 @@ UnaScreen.onControllerLeave(function(data) {
 Register the controller input event associated with key with your callback. 
 When a controller sends a message to the screen, your callback will be called 
 with an object containing the following keys:
-- una: The una header
-- payload: The payload object that was sent by the controller
+- **una**: The una header
+- **payload**: The payload object that was sent by the controller
 
 ```javascript
 UnaScreen.onControllerInput('move', function(res) {
@@ -189,7 +189,7 @@ UnaScreen.sendToController(ctrl_id, 'disable', {button: 'shoot'});
 Register the server input event identified with key with your callback, 
 in server mode. When a server sends a message to the screen, 
 your callback will be called with an object containing the following keys:
-- payload: The payload object that was sent by the server.
+- **payload**: The payload object that was sent by the server.
 
 ```javascript
 UnaScreen.onServerInput('clear_screen', function(res) {
@@ -218,10 +218,10 @@ Your user_data should be a JSON object identifying the controller instance.
 
 When the registration has been complete, your callback function will
 be called with an object with the following keys:
-- success: Whether the controller has registered successfully
-- (in server mode) state: The current state of the room at the moment
+- **success: Whether the controller has registered successfully
+- (in server mode) **state**: The current state of the room at the moment
 the screen joins.
-- (optional) error: The error message if the registration has 
+- (optional) **error**: The error message if the registration has 
 failed.
 
 Note that for controllers, registration is only complete after the Screen
@@ -251,8 +251,8 @@ if (userIsShooting) {
 Register the screen input event with your callback. When a screen sends
 sends a message to this controller, your callback will be called with 
 an object containing the following keys:
-- una: The una header
-- payload: The payload object that was sent by the screen
+- **una**: The una header
+- **payload**: The payload object that was sent by the screen
 
 ### UnaController.onServerInput(key, callback)
 
@@ -271,7 +271,7 @@ UnaController.sendToServer('vote', {type: 'tomato'});
 
 ## Una Header
 The Una Header object consists of the following keys:
-- id: The socket.io associated with the originator of the event
-- user_data: The user_data associated with the originator of the event
-- room: The current room_id
-- type: Either "screen", "controller" or "server"
+- **id**: The socket.io associated with the originator of the event
+- **user_data**: The user_data associated with the originator of the event
+- **room**: The current room_id
+- **type**: Either "screen", "controller" or "server"

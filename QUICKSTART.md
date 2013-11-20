@@ -156,19 +156,19 @@ To send data, use the following `sendTo` methods:
 **Controller**
 
 ```javascript
-UnaController.sendToScreen(<type_of_event>, { data: 'data' });
+UnaController.sendToScreen(event_key, data);
 ```
 
-`<type_of_event>` is a string, which the Screen will use to identify the type of `sendTo` event,
-and the second parameter is a JavaScript object of the data to send to the screen.
+- **event_key** is a string, which the Screen will use to identify the type of `sendTo` event,
+- **data**: A JavaScript object of the data to send to the screen.
 
 **Screen**
 
 ```javascript
-UnaScreen.sendToController(<controller_id>, <type_of_event>, {data: 'data'})
+UnaScreen.sendToController(controller_id, event_key, {data: 'data'})
 ```
 
-The Screen can also send data to a particular controller. The `<controller_id>` can
+The Screen can also send data to a particular controller. **controller_id** is a string that can
 be obtained from `res.una.id` of the controller when it was first registered,
 or after an `onControllerInput` event.
 
@@ -179,8 +179,8 @@ To listen for data, use the following `onInput` methods:
 **Controller**
 
 ```javascript
-UnaController.onScreenInput(<type_of_event>, function(res) {
-    // <type_of_event>: This string should correspond to the string passed in to the `sendToController` function from the Screen
+UnaController.onScreenInput(event_key, function(res) {
+    // event_key: This string should correspond to the string passed in to the `sendToController` function from the Screen
     // res.una: Una header
     // res.una.user_data: The user data of the Screen sender
     // res.una.id: Unique id of the sender
@@ -191,8 +191,8 @@ UnaController.onScreenInput(<type_of_event>, function(res) {
 **Screen**
 
 ```javascript
-UnaScreen.onControllerInput(<type_of_event>, function(res) {
-    // <type_of_event>: This string should correspond to the string passed in to the `sendToScreen` function from the Controller
+UnaScreen.onControllerInput(event_key, function(res) {
+    // event_key: This string should correspond to the string passed in to the `sendToScreen` function from the Controller
     // res.una: Una header
     // res.una.user_data: The user data of the Controller sender
     // res.una.id: Unique id of the sender
