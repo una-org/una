@@ -101,7 +101,7 @@ and controllers which would be changing the state of the room by
 sending messages to the Screen.
 
 Note that in relay mode, there can only be **one** Screen active at any time
-for each room. All the controllers in that room TODO
+for each room.
 
 ### Installation
 
