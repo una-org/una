@@ -10,6 +10,8 @@ In Una, there are two kinds of clients:
 The Una Server acts as a relay between the Screen and the Controller(s), passing messages between them. By
 doing so, we can keep the Server footprint small with minimal processing, (as all we are doing is relaying messages between the Screen and Controller).
 
+[Relay Flow](images/relay.jpg)
+
 Both the Screen and the Controller comprises of client-side JavaScript code, and are connected
 to the Server via websockets through socket.io. The Una Server is written in node.js.
 
