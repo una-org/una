@@ -2,13 +2,13 @@
 
 ## Technological Overview
 
-In Una, a Screen refers to the client that is performing the main processing,
-after receiving inputs from one or many Controllers. The Una Server acts as a
+In Una, a **Screen** refers to the desktop client that is performing the main processing,
+after receiving inputs from one or many **Controllers**. The Una Server acts as a
 relay between the Screen and the Controller, relaying messages between them. By
-doing so, we can keep the Server foot print small with minimial processing, 
+doing so, we can keep the Server footprint small with minimal processing, 
 (as all we are doing is relaying messages between the Screen and Controller).
 
-The Screen and the Client are client side JavaScript code, and are connected
+The Screen and the Controller comprises of client side JavaScript code, and are connected
 to the Server via websockets through socket.io. The Una Server is written
 in node.js.
 
@@ -35,7 +35,7 @@ After installing Una, create an app.js file, which would be the starting point o
 your node.js application. Type the following code:
 
 ```javascript
-una = require('una')
+una = require('una');
 
 una.listen(3216);
 ```
@@ -44,14 +44,15 @@ Run your node.js application in shell with:
 ```shell
 $ node app.js
    info - socket.io started
+   Una server listening on port 3216
 ```
 
 Note: Una is built on top of express and socket.io, and as such, 
-these dependencies are automatically installed when you installed Una.
+these dependencies are automatically installed when you install Una.
 
-una.listen takes in a port number, and creates a HttpServer listening at that
+`una.listen` takes in a port number, and creates a HttpServer listening on that
 port number, running the express framework. In addition, it also launches the
-socket.io client listening at the same port. To gain access to the express app
+socket.io client listening on the same port. To gain access to the express app
 object and the socket.io io object, use the following commands:
 
 ```javascript
@@ -61,13 +62,13 @@ var app = una.app;
 // socket.io io instance
 var io = una.io;
 
-// expres library:
+// express library:
 var express = una.express;
 ```
 
 ### Serving static HTML files
 
-We want a way to serve static HTML files using the express framework. Modify app.js to the following
+We want a way to serve static HTML files using the express framework. Modify `app.js` to the following:
 ```javascript
 path = require('path');
 una = require('una');
@@ -81,18 +82,18 @@ app.use(express.static(path.join(__dirname, 'public'));
 una.listen(3216);
 ```
 
-This will configue express to serve static files at the /public directory.
+This will configue express to serve static files in the `/public` directory.
 Since Una is a wrapper around express and socket.io, you may use the express
 client to serve other routes that your application needs.
 
 ## Una Screen and Controller
 
 ### Room
-Una has the concept of a room, which can be thought of as a grouping of
-Screen and Controllers. Screen and Controllers can only communicate to each
+In Una, rooms are thought of as collections of
+Screen and Controllers. The Screen and Controllers can only communicate with each
 other if they are in the same room. You can think of a room as an instance
 of a game, where there is one Screen which shows the game state of that room,
-and multiple controllers which would be changing the state of the game by
+and controllers which would be changing the state of the game by
 sending messages to the Screen.
 
 Note that in relay mode, there can only be one Screen active at any time
