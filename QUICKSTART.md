@@ -94,9 +94,10 @@ client to serve other routes that your application needs.
 
 ### Room
 
-In Una, rooms are thought of as collections of Screen and Controllers. The Screen and Controllers can only communicate with each
+In Una, rooms are thought of as collections of Screen and Controllers. 
+The Screen and Controllers can only communicate with each
 other if they are in the same room. You can think of a room as an instance
-of a game, where there is one Screen which shows the state of that room,
+of a 'game', where there is one Screen which shows the state of that room,
 and controllers which would be changing the state of the room by
 sending messages to the Screen.
 

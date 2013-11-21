@@ -1,7 +1,3 @@
-# Una: 
-
-[![Build Status](https://travis-ci.org/soedar/una.png)](https://travis-ci.org/soedar/una)
-
 ## Screen-Controller Mode
 
 ### Server
