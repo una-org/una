@@ -49,7 +49,7 @@ var UnaController = (function() {
     }
 
     var onScreenInput = function(key, callback) {
-        if (key in screenCallbacks) {
+        if (key in screen_callbacks) {
             screen_callbacks[key].push(callback);
         }
         else {
