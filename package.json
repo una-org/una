@@ -1,6 +1,6 @@
 {
   "name": "una",
-  "version": "0.4.2",
+  "version": "0.4.3",
   "description": "Una",
   "directories": {
     "test": "test"
@@ -18,8 +18,8 @@
   },
 
   "dependencies": {
-    "express": "",
-    "socket.io": ""
+    "express": "3.4.4",
+    "socket.io": "0.9.16"
   },
 
   "devDependencies": {
